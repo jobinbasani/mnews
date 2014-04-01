@@ -1,4 +1,4 @@
-package com.jobinbasani.news.vo;
+package com.jobinbasani.news.ml.vo;
 
 import java.util.ArrayList;
 
