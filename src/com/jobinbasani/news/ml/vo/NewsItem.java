@@ -8,6 +8,7 @@ public class NewsItem {
 	private String newsHeader;
 	private String newsDetails;
 	private String newsImageUrl;
+	private String imageId;
 	private String newsSavedImageName;
 	private String parentId;
 	private String newsLink;
@@ -40,6 +41,12 @@ public class NewsItem {
 	}
 	public void setNewsImageUrl(String newsImageUrl) {
 		this.newsImageUrl = newsImageUrl;
+	}
+	public String getImageId() {
+		return imageId;
+	}
+	public void setImageId(String imageId) {
+		this.imageId = imageId;
 	}
 	public String getNewsSavedImageName() {
 		return newsSavedImageName;
