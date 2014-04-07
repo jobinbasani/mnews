@@ -13,6 +13,7 @@ public class NewsItem {
 	private String parentId;
 	private String newsLink;
 	private String newsProvider;
+	private String newsCategory;
 	private ArrayList<NewsItem> childNewsItems;
 	
 	public String getNewsId() {
@@ -75,6 +76,12 @@ public class NewsItem {
 	public void setNewsProvider(String newsProvider) {
 		this.newsProvider = newsProvider;
 	}
+	public String getNewsCategory() {
+		return newsCategory;
+	}
+	public void setNewsCategory(String newsCategory) {
+		this.newsCategory = newsCategory;
+	}
 	public void setChildNewsItems(ArrayList<NewsItem> childNewsItems) {
 		this.childNewsItems = childNewsItems;
 	}
@@ -92,7 +99,7 @@ public class NewsItem {
 	}
 	@Override
 	public String toString() {
-		return "newsId="+newsId+", newsHeader="+newsHeader+", newsDetails="+newsDetails+", newsLink="+newsLink+", newsProvider="+newsProvider;
+		return "newsId="+newsId+", parentId="+parentId+", newsCategory="+newsCategory+", newsHeader="+newsHeader+", newsDetails="+newsDetails+", newsLink="+newsLink+", newsProvider="+newsProvider;
 	}
 
 }

@@ -68,9 +68,16 @@ public class NewsService extends IntentService {
 			     XmlPullParser xpp = factory.newPullParser();
 			     xpp.setInput(in, "UTF-8");
 			     int eventType = xpp.getEventType();
+			     String newsCategory = null;
 			     while(eventType != XmlPullParser.END_DOCUMENT){
+			    	 if( xpp.getName()!=null && xpp.getName().equals("category") && eventType==XmlPullParser.START_TAG){
+			    		 eventType = xpp.next();
+			    		 newsCategory = xpp.getText();
+			    		 eventType = xpp.next();
+			    		 continue;
+			    	 }
 			    	 if(xpp.getName()!=null && xpp.getName().equals("description") && eventType==XmlPullParser.START_TAG){
-			    		 xpp.next();
+			    		 eventType = xpp.next();
 			    		 String details = xpp.getText().replaceAll("&nbsp;", " ").replaceAll("&raquo;", ">>");
 			    		 if(details.startsWith("<table")){
 			    			 String newsId = System.currentTimeMillis()+"";
@@ -88,6 +95,9 @@ public class NewsService extends IntentService {
 				    		 int linkCounter = 0;
 				    		 boolean mainHeaderSection = true;
 				    		 mainNews.setNewsId(newsId);
+				    		 if(newsCategory!=null && newsCategory.length()>0){
+				    			 mainNews.setNewsCategory(newsCategory);
+				    		 }
 				    		 while(detailsEventType != XmlPullParser.END_DOCUMENT){
 				    			 if(mainHeaderSection){
 				    				 if(mainNews.getNewsImageUrl()==null && detailsEventType == XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("img")){
@@ -96,9 +106,9 @@ public class NewsService extends IntentService {
 					    					 mainNews.setNewsImageUrl("http:"+mainNews.getNewsImageUrl());
 					    				 }
 					    				 if(mainNews.getNewsImageUrl()!=null){
-					    					 mainNews.setImageId(mainNews.getNewsId());
+					    					 mainNews.setImageId("nimg"+mainNews.getNewsId()+".png");
 					    				 }
-					    				 detailsParser.next();
+					    				 detailsEventType = detailsParser.next();
 					    				 continue;
 					    			 }
 					    			 if(mainNews.getNewsLink()==null && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("a")){
@@ -107,37 +117,36 @@ public class NewsService extends IntentService {
 					    					 mainNews.setNewsLink(detailsParser.getAttributeValue(null, "href"));
 						    				 upcomingMainNewsHeader = true;
 					    				 }
-					    				 detailsParser.next();
+					    				 detailsEventType = detailsParser.next();
 					    				 continue;
 					    			 }
 					    			 if(upcomingMainNewsHeader && mainNews.getNewsHeader()==null && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("b")){
 					    				 upcomingMainNewsHeader = false;
-					    				 upcomingMainNewsDetails = true;
-					    				 detailsParser.next();
+					    				 upcomingMainNewsProvider = true;
+					    				 
+					    				 detailsEventType = detailsParser.next();
 					    				 mainNews.setNewsHeader(detailsParser.getText());
-					    				 detailsParser.next();
+					    				 detailsEventType = detailsParser.next();
 					    				 continue;
 					    			 }
-				    				 if(upcomingMainNewsDetails && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("font")){
+				    				 if(upcomingMainNewsProvider && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("font")){
 				    					 fontCounter++;
 				    					 if(fontCounter == 2){
-				    						 detailsParser.next();
+				    						 detailsEventType = detailsParser.next();
 				    						 mainNews.setNewsProvider(detailsParser.getText());
-				    						 upcomingMainNewsDetails = false;
-				    						 upcomingMainNewsProvider = true;
+				    						 upcomingMainNewsProvider = false;
+				    						 upcomingMainNewsDetails = true;
 					    				 }
-				    					 detailsParser.next();
+				    					 detailsEventType = detailsParser.next();
 					    				 continue;
 				    				 }
 				    				 
-				    				 if(upcomingMainNewsProvider && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("font")){
-			    						 for(int i=0;i<6;i++)
-			    							 detailsParser.next(); 
-			    						 
-			    						 mainNews.setNewsDetails(detailsParser.getText());
+				    				 if(upcomingMainNewsDetails && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("font")){
+				    					 detailsEventType = detailsParser.next();
+				    					 mainNews.setNewsDetails(detailsParser.getText());
 			    						 upcomingMainNewsProvider = false;
 			    						 mainHeaderSection = false;
-				    					 detailsParser.next();
+			    						 detailsEventType = detailsParser.next();
 					    				 continue;
 				    				 }
 				    			 }else{
@@ -146,11 +155,11 @@ public class NewsService extends IntentService {
 				    					 childNews = new NewsItem();
 				    					 childNews.setParentId(newsId);
 				    					 childNews.setNewsLink(detailsParser.getAttributeValue(null, "href"));
-				    					 detailsParser.next();
+				    					 detailsEventType = detailsParser.next();
 				    					 childNews.setNewsHeader(detailsParser.getText());
 				    				 }else if(!childNewsStart && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("nobr")){
 				    					 childNewsStart = true;
-				    					 detailsParser.next();
+				    					 detailsEventType = detailsParser.next();
 				    					 childNews.setNewsProvider(detailsParser.getText());
 				    					 if(childNews.getNewsHeader()!=null && childNews.getNewsLink()!=null && childNews.getNewsProvider()!=null){
 				    						 childNewsList.add(childNews);
@@ -190,7 +199,7 @@ public class NewsService extends IntentService {
 			if(responseCode == HttpURLConnection.HTTP_OK){
 				InputStream input = conn.getInputStream();
 				Bitmap newsImg = BitmapFactory.decodeStream(input);
-				FileOutputStream outStream = openFileOutput("nimg"+imgId+".png", Context.MODE_PRIVATE);
+				FileOutputStream outStream = openFileOutput(imgId, Context.MODE_PRIVATE);
 				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 				newsImg.compress(Bitmap.CompressFormat.PNG, 100, bytes);
 				outStream.write(bytes.toByteArray());
