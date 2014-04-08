@@ -26,6 +26,7 @@
         </activity>
         <receiver android:name=".receiver.NewsReceiver" android:exported="false"></receiver>
         <service android:name=".service.NewsService"></service>
+        <provider android:exported="false" android:authorities="@string/NewsProvider" android:name=".provider.NewsContentProvider"></provider>
     </application>
 
 </manifest>

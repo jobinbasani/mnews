@@ -4,5 +4,6 @@
     <string name="app_name">Malayalam News</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="NewsProvider">com.jobinbasani.news.ml.provider</string>
 
 </resources>

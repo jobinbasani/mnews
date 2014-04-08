@@ -1,12 +1,12 @@
-package com.jobinbasani.news.ml.data;
+package com.jobinbasani.news.ml.provider;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 public final class NewsDataContract {
 	
-	public NewsDataContract(){
-		
-	}
+	public static final String AUTHORITY = NewsDataContract.class.getPackage().getName();
+	public static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/");
 	
 	public static abstract class NewsDataEntry implements BaseColumns{
 		public static final String TABLE_NAME = "newsdata";

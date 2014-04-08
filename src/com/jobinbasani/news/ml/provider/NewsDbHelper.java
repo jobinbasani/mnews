@@ -1,6 +1,6 @@
-package com.jobinbasani.news.ml.data;
+package com.jobinbasani.news.ml.provider;
 
-import com.jobinbasani.news.ml.data.NewsDataContract.NewsDataEntry;
+import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
