@@ -1,5 +1,6 @@
 package com.jobinbasani.news.ml;
 
+import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.receiver.NewsReceiver;
 
 import android.os.Bundle;
@@ -11,8 +12,6 @@ import android.view.View;
 
 public class MainActivity extends Activity {
 
-	final static public String LOG_TAG="MalNews";
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,10 +26,10 @@ public class MainActivity extends Activity {
 	}
 	
 	public void launchService(View v){
-		Log.d(LOG_TAG, "In btn click");
+		Log.d(NewsConstants.LOG_TAG, "In btn click");
 		Intent bIntent = new Intent(this, NewsReceiver.class);
 		sendBroadcast(bIntent);
-		Log.d(LOG_TAG, "After btn click");
+		Log.d(NewsConstants.LOG_TAG, "After btn click");
 	}
 
 }

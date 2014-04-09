@@ -1,6 +1,6 @@
 package com.jobinbasani.news.ml.receiver;
 
-import com.jobinbasani.news.ml.MainActivity;
+import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.service.NewsService;
 
 import android.content.Context;
@@ -12,7 +12,7 @@ public class NewsReceiver extends WakefulBroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.d(MainActivity.LOG_TAG, "In broadcast reciever");
+		Log.d(NewsConstants.LOG_TAG, "In broadcast reciever");
 		Intent sIntent = new Intent(context, NewsService.class);
 		startWakefulService(context, sIntent);
 	}

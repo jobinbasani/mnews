@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import com.jobinbasani.news.ml.MainActivity;
 import com.jobinbasani.news.ml.constants.NewsConstants;
+import com.jobinbasani.news.ml.provider.NewsDataContract;
 import com.jobinbasani.news.ml.receiver.NewsReceiver;
 import com.jobinbasani.news.ml.vo.NewsItem;
 
@@ -34,14 +34,15 @@ public class NewsService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		Log.d(MainActivity.LOG_TAG, "In intent service");
+		Log.d(NewsConstants.LOG_TAG, "In intent service");
 		String[] topics = {"","w","s"};
 		ArrayList<NewsItem> newsCollection = new ArrayList<NewsItem>();
+		long batchId = System.currentTimeMillis();
+		int categoryId = 0;
 		for(String topic:topics){
-			newsCollection.addAll(getTopicNews(topic));
+			newsCollection.addAll(getTopicNews(topic, batchId+"", ++categoryId+""));
 		}
 		boolean imgDownloadStatus = true;
-		long imgDownloadTimeStamp = System.currentTimeMillis();
 		for(NewsItem mainNews:newsCollection){
 			if(mainNews.getImageId()!=null){
 				if(!downloadImage(mainNews.getNewsImageUrl(), mainNews.getImageId()))
@@ -49,12 +50,15 @@ public class NewsService extends IntentService {
 			}
 		}
 		if(imgDownloadStatus){
-			clearOldImages(imgDownloadTimeStamp);
+			clearOldImages(batchId);
 		}
+		NewsItem newsValues = new NewsItem();
+		newsValues.setChildNewsItems(newsCollection);
+		getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
 		NewsReceiver.completeWakefulIntent(intent);
 	}
 	
-	private ArrayList<NewsItem> getTopicNews(String topic){
+	private ArrayList<NewsItem> getTopicNews(String topic, String batchId, String categoryId){
 		ArrayList<NewsItem> newsList = new ArrayList<NewsItem>();
 		try{
 			String feedUrl = NewsConstants.NEWS_FEED_URL;
@@ -95,6 +99,8 @@ public class NewsService extends IntentService {
 				    		 int linkCounter = 0;
 				    		 boolean mainHeaderSection = true;
 				    		 mainNews.setNewsId(newsId);
+				    		 mainNews.setBatchId(batchId);
+				    		 mainNews.setCategoryId(categoryId);
 				    		 if(newsCategory!=null && newsCategory.length()>0){
 				    			 mainNews.setNewsCategory(newsCategory);
 				    		 }
@@ -162,6 +168,8 @@ public class NewsService extends IntentService {
 				    					 detailsEventType = detailsParser.next();
 				    					 childNews.setNewsProvider(detailsParser.getText());
 				    					 if(childNews.getNewsHeader()!=null && childNews.getNewsLink()!=null && childNews.getNewsProvider()!=null){
+				    						 childNews.setBatchId(batchId);
+				    						 childNews.setCategoryId(categoryId);
 				    						 childNewsList.add(childNews);
 				    					 }
 				    				 }

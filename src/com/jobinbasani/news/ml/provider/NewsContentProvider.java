@@ -1,9 +1,12 @@
 package com.jobinbasani.news.ml.provider;
 
+import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
+
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 public class NewsContentProvider extends ContentProvider {
@@ -37,6 +40,27 @@ public class NewsContentProvider extends ContentProvider {
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
 		return null;
+	}
+
+	@Override
+	public int bulkInsert(Uri uri, ContentValues[] values) {
+		int rowsAdded = 0;
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		db.beginTransaction();
+		
+		try{
+			for(ContentValues value:values){
+				db.insert(NewsDataEntry.TABLE_NAME, null, value);
+				rowsAdded++;
+			}
+			
+			db.setTransactionSuccessful();
+		}catch(Exception e){
+			
+		}finally{
+			db.endTransaction();
+		}
+		return rowsAdded;
 	}
 
 	@Override

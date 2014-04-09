@@ -2,9 +2,14 @@ package com.jobinbasani.news.ml.vo;
 
 import java.util.ArrayList;
 
+import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
+
+import android.content.ContentValues;
+
 public class NewsItem {
 
 	private String newsId;
+	private String batchId;
 	private String newsHeader;
 	private String newsDetails;
 	private String newsImageUrl;
@@ -14,6 +19,7 @@ public class NewsItem {
 	private String newsLink;
 	private String newsProvider;
 	private String newsCategory;
+	private String categoryId;
 	private ArrayList<NewsItem> childNewsItems;
 	
 	public String getNewsId() {
@@ -21,6 +27,12 @@ public class NewsItem {
 	}
 	public void setNewsId(String newsId) {
 		this.newsId = newsId;
+	}
+	public String getBatchId() {
+		return batchId;
+	}
+	public void setBatchId(String batchId) {
+		this.batchId = batchId;
 	}
 	public String getNewsHeader() {
 		return newsHeader;
@@ -82,6 +94,12 @@ public class NewsItem {
 	public void setNewsCategory(String newsCategory) {
 		this.newsCategory = newsCategory;
 	}
+	public String getCategoryId() {
+		return categoryId;
+	}
+	public void setCategoryId(String categoryId) {
+		this.categoryId = categoryId;
+	}
 	public void setChildNewsItems(ArrayList<NewsItem> childNewsItems) {
 		this.childNewsItems = childNewsItems;
 	}
@@ -91,7 +109,10 @@ public class NewsItem {
 			childItem.setNewsHeader(this.newsHeader);
 			childItem.setNewsLink(this.newsLink);
 			childItem.setNewsProvider(this.newsProvider);
-			childNewsItems.add(childItem);
+			childItem.setParentId(this.newsId);
+			childItem.setBatchId(this.batchId);
+			childItem.setCategoryId(this.categoryId);
+			childNewsItems.add(0, childItem);
 			setChildNewsItems(childNewsItems);
 		}else{
 			setChildNewsItems(childNewsItems);
@@ -100,6 +121,34 @@ public class NewsItem {
 	@Override
 	public String toString() {
 		return "newsId="+newsId+", parentId="+parentId+", newsCategory="+newsCategory+", newsHeader="+newsHeader+", newsDetails="+newsDetails+", newsLink="+newsLink+", newsProvider="+newsProvider;
+	}
+	
+	public ContentValues[] getContentValueArray(){
+		ArrayList<ContentValues> contentList = new ArrayList<ContentValues>();
+		
+		for(NewsItem mainNewsItem:getChildNewsItems()){
+			contentList.add(mainNewsItem.getContentValues());
+			for(NewsItem childNewsItem:mainNewsItem.getChildNewsItems()){
+				contentList.add(childNewsItem.getContentValues());
+			}
+		}
+		
+		return contentList.toArray(new ContentValues[contentList.size()]);
+	}
+	
+	public ContentValues getContentValues(){
+		ContentValues values = new ContentValues();
+		values.put(NewsDataEntry.COLUMN_NAME_NEWSCATEGORY, getNewsCategory());
+		values.put(NewsDataEntry.COLUMN_NAME_CATEGORYID, getCategoryId());
+		values.put(NewsDataEntry.COLUMN_NAME_NEWSDETAILS, getNewsDetails());
+		values.put(NewsDataEntry.COLUMN_NAME_NEWSHEADER, getNewsHeader());
+		values.put(NewsDataEntry.COLUMN_NAME_NEWSID, getNewsId());
+		values.put(NewsDataEntry.COLUMN_NAME_BATCHID, getBatchId());
+		values.put(NewsDataEntry.COLUMN_NAME_NEWSIMG, getImageId());
+		values.put(NewsDataEntry.COLUMN_NAME_NEWSLINK, getNewsLink());
+		values.put(NewsDataEntry.COLUMN_NAME_NEWSPROVIDER, getNewsProvider());
+		values.put(NewsDataEntry.COLUMN_NAME_PARENTID, getParentId());
+		return values;
 	}
 
 }

@@ -18,9 +18,11 @@ public class NewsDbHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + NewsDataEntry.TABLE_NAME + " (" +
             		NewsDataEntry._ID +INTEGER_TYPE+" PRIMARY KEY AUTOINCREMENT," +
             		NewsDataEntry.COLUMN_NAME_NEWSID + INTEGER_TYPE + COMMA_SEP +
+            		NewsDataEntry.COLUMN_NAME_BATCHID + INTEGER_TYPE + COMMA_SEP +
             		NewsDataEntry.COLUMN_NAME_PARENTID + INTEGER_TYPE + COMMA_SEP +
             		NewsDataEntry.COLUMN_NAME_NEWSHEADER + TEXT_TYPE + COMMA_SEP +
             		NewsDataEntry.COLUMN_NAME_NEWSCATEGORY + TEXT_TYPE + COMMA_SEP +
+            		NewsDataEntry.COLUMN_NAME_CATEGORYID + INTEGER_TYPE + COMMA_SEP +
             		NewsDataEntry.COLUMN_NAME_NEWSDETAILS + TEXT_TYPE + COMMA_SEP +
             		NewsDataEntry.COLUMN_NAME_NEWSPROVIDER + TEXT_TYPE + COMMA_SEP +
             		NewsDataEntry.COLUMN_NAME_NEWSIMG + TEXT_TYPE + COMMA_SEP +
@@ -41,6 +43,12 @@ public class NewsDbHelper extends SQLiteOpenHelper {
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		db.execSQL(SQL_DELETE_ENTRIES);
+		onCreate(db);
+	}
+
+	@Override
+	public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		onUpgrade(db, oldVersion, newVersion);
 	}
 
 }
