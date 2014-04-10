@@ -6,28 +6,34 @@ import com.jobinbasani.news.ml.interfaces.NewsDataHandlers;
 import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
 
 import android.app.Fragment;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.SimpleCursorAdapter;
+import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.Spinner;
 
 public class CategorySelector extends Fragment implements OnItemSelectedListener {
 	
 	Spinner categorySpinner;
 	NewsDataHandlers newsDataHandler;
+	SimpleCursorAdapter mAdapter;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.category_selector, null);
 		categorySpinner = (Spinner) rootView.findViewById(R.id.categorySpinner);
-		SimpleCursorAdapter mAdapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_spinner_item, null, new String[]{NewsDataEntry.COLUMN_NAME_NEWSCATEGORY}, new int[]{android.R.id.text1}, SimpleCursorAdapter.NO_SELECTION);
+		mAdapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_spinner_item, null, new String[]{NewsDataEntry.COLUMN_NAME_NEWSCATEGORY}, new int[]{android.R.id.text1}, SimpleCursorAdapter.NO_SELECTION);
 		mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		mAdapter.setViewBinder(new SpinnerViewBinder());
 		categorySpinner.setAdapter(mAdapter);
-		return inflater.inflate(R.layout.category_selector, null);
+		categorySpinner.setOnItemSelectedListener(this);
+		return rootView;
 	}
 
 	@Override
@@ -41,16 +47,31 @@ public class CategorySelector extends Fragment implements OnItemSelectedListener
 	@Override
 	public void onItemSelected(AdapterView<?> adapterView, View view, int i,
 			long l) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("tag="+view.getTag());
 	}
 
 	@Override
 	public void onNothingSelected(AdapterView<?> adapterView) {
-		// TODO Auto-generated method stub
 		
 	}
 	
+	public void changeSpinnerCursor(Cursor c){
+		mAdapter.swapCursor(c);
+	}
 	
+	private class SpinnerViewBinder implements ViewBinder{
+
+		@Override
+		public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+			if(cursor!=null && view.getId() == android.R.id.text1){
+				TextView textView = (TextView) view;
+				textView.setText(cursor.getString(columnIndex));
+				textView.setTag(cursor.getInt(cursor.getColumnIndex(NewsDataEntry._ID)));
+				return true;
+			}
+			return false;
+		}
+		
+	}
 
 }

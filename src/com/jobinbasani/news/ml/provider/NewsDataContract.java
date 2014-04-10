@@ -6,7 +6,9 @@ import android.provider.BaseColumns;
 public final class NewsDataContract {
 	
 	public static final String AUTHORITY = NewsDataContract.class.getPackage().getName();
+	public static final String CATEGORIES = "categories";
 	public static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/");
+	public static final Uri CONTENT_URI_CATEGORIES = Uri.withAppendedPath(CONTENT_URI, CATEGORIES);
 	
 	public static abstract class NewsDataEntry implements BaseColumns{
 		public static final String TABLE_NAME = "newsdata";

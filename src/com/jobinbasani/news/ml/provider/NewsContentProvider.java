@@ -13,15 +13,13 @@ public class NewsContentProvider extends ContentProvider {
 	
 	private NewsDbHelper dbHelper = null;
 	private static UriMatcher URI_MATCHER;
-	private static final int NEWS_ADD = 1;
-	private static final int NEWS_CATEGORIES = 2;
-	private static final int NEWS_MAIN = 3;
-	private static final int NEWS_CHILD = 4;
+	private static final int NEWS_CATEGORIES = 1;
+	private static final int NEWS_MAIN = 2;
+	private static final int NEWS_CHILD = 3;
 	
 	static{
 		URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
-		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, "add", NEWS_ADD);
-		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, "categories", NEWS_CATEGORIES);
+		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, NewsDataContract.CATEGORIES, NEWS_CATEGORIES);
 		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, "mainnews", NEWS_MAIN);
 		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, "childnews/#", NEWS_CHILD);
 	}
@@ -70,9 +68,15 @@ public class NewsContentProvider extends ContentProvider {
 	}
 
 	@Override
-	public Cursor query(Uri arg0, String[] arg1, String arg2, String[] arg3,
-			String arg4) {
-		// TODO Auto-generated method stub
+	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+			String sortOrder) {
+		
+		int uriType = URI_MATCHER.match(uri);
+		switch(uriType){
+		case NEWS_CATEGORIES:
+			String categorySelection = "SELECT distinct "+NewsDataEntry.COLUMN_NAME_CATEGORYID+" as "+NewsDataEntry._ID+", "+NewsDataEntry.COLUMN_NAME_NEWSCATEGORY+" from "+NewsDataEntry.TABLE_NAME+" where "+NewsDataEntry.COLUMN_NAME_NEWSCATEGORY+" is not null";
+			return dbHelper.getReadableDatabase().rawQuery(categorySelection, null);
+		}
 		return null;
 	}
 

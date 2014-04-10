@@ -15,6 +15,7 @@
         android:name="com.jobinbasani.news.ml.fragments.CategorySelector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:tag="@string/categorySelectorTag"
         tools:layout="@layout/category_selector" />
 
     <Button
