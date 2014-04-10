@@ -16,6 +16,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.provider.NewsDataContract;
+import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
 import com.jobinbasani.news.ml.receiver.NewsReceiver;
 import com.jobinbasani.news.ml.vo.NewsItem;
 
@@ -49,12 +50,19 @@ public class NewsService extends IntentService {
 					imgDownloadStatus = false;
 			}
 		}
-		if(imgDownloadStatus){
-			clearOldImages(batchId);
+		if(newsCollection.size()>0){
+			if(imgDownloadStatus){
+				clearOldImages(batchId);
+			}
+			NewsItem newsValues = new NewsItem();
+			newsValues.setChildNewsItems(newsCollection);
+			int insertCount = getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
+			if(insertCount>0){
+				Log.d(NewsConstants.LOG_TAG, "Inserted = "+insertCount);
+				getContentResolver().delete(NewsDataContract.CONTENT_URI, NewsDataEntry.COLUMN_NAME_BATCHID+"<?", new String[]{batchId+""});
+			}
+			
 		}
-		NewsItem newsValues = new NewsItem();
-		newsValues.setChildNewsItems(newsCollection);
-		getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
 		NewsReceiver.completeWakefulIntent(intent);
 	}
 	

@@ -27,9 +27,9 @@ public class NewsContentProvider extends ContentProvider {
 	}
 
 	@Override
-	public int delete(Uri arg0, String arg1, String[] arg2) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int delete(Uri uri, String selection, String[] selectionArgs) {
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		return db.delete(NewsDataEntry.TABLE_NAME, selection, selectionArgs);
 	}
 
 	@Override
