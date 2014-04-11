@@ -79,7 +79,6 @@ public class NewsContentProvider extends ContentProvider {
 		case NEWS_MAIN:
 			return dbHelper.getReadableDatabase().query(NewsDataEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, NewsDataEntry.COLUMN_NAME_NEWSID);
 		case NEWS_CHILD:
-			System.out.println("in here");
 			return dbHelper.getReadableDatabase().query(NewsDataEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, NewsDataEntry._ID);
 		}
 		return null;
@@ -87,7 +86,6 @@ public class NewsContentProvider extends ContentProvider {
 
 	@Override
 	public int update(Uri arg0, ContentValues arg1, String arg2, String[] arg3) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

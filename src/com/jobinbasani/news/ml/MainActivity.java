@@ -59,8 +59,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 			String categoryId = args.getInt(NewsConstants.CATEGORY_KEY, 0)+"";
 			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_MAINNEWS, new String[]{NewsDataEntry._ID,NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSID}, NewsDataEntry.COLUMN_NAME_NEWSID+" is not null and "+NewsDataEntry.COLUMN_NAME_CATEGORYID+"=?", new String[]{categoryId}, null);
 		default:
-			String newsId = args.getInt(NewsConstants.NEWSID_KEY, 0)+"";
-			System.out.println("newsis="+newsId);
+			String newsId = args.getString(NewsConstants.NEWSID_KEY, "0");
 			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_CHILDNEWS, new String[]{NewsDataEntry._ID,NewsDataEntry.COLUMN_NAME_NEWSHEADER}, NewsDataEntry.COLUMN_NAME_PARENTID+"=?", new String[]{newsId}, null);
 		}
 	}
@@ -75,6 +74,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 			newsWidget.swapMainCursor(cursor);
 			break;
 		default:
+			System.out.println("child="+cursor.getCount());
 			newsWidget.swapChildCursor(loader.getId(), cursor);
 		}
 	}

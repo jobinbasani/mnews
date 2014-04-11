@@ -33,7 +33,7 @@ public class NewsWidget extends Fragment {
 	}
 	
 	public void swapMainCursor(Cursor cursor){
-		mAdapter.setGroupCursor(cursor);
+		mAdapter.changeCursor(cursor);
 	}
 	
 	public void swapChildCursor(int position, Cursor cursor){
@@ -52,7 +52,7 @@ public class NewsWidget extends Fragment {
 		@Override
 		protected Cursor getChildrenCursor(Cursor groupCursor) {
 			Bundle args = new Bundle();
-			args.putInt(NewsConstants.NEWSID_KEY, groupCursor.getInt(groupCursor.getColumnIndex(NewsDataEntry.COLUMN_NAME_NEWSID)));
+			args.putString(NewsConstants.NEWSID_KEY, groupCursor.getString(groupCursor.getColumnIndex(NewsDataEntry.COLUMN_NAME_NEWSID)));
 			newsDataHandler.initLoaderWithId(groupCursor.getPosition(), args);
 			return null;
 		}
