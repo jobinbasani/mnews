@@ -11,39 +11,84 @@ import com.jobinbasani.news.ml.receiver.NewsReceiver;
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
-import android.util.Log;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, NewsDataHandlers {
 	
 	CategorySelector categorySelector;
 	NewsWidget newsWidget;
-
+	private ImageView refreshIconView;
+	Animation rotation;
+	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			afterRefresh();
+		}
+	};
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		rotation = AnimationUtils.loadAnimation(this, R.anim.rotation_animation);
+		rotation.setRepeatCount(Animation.INFINITE);
 		setContentView(R.layout.activity_main);
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter(NewsConstants.NEWS_REFRESH_ACTION));
+	}
+
+	@Override
+	protected void onStop() {
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+		super.onStop();
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+		refreshIconView = (ImageView) menu.findItem(R.id.action_refresh).getActionView();
+		refreshIconView.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				refreshNews();
+			}
+		});
 		return true;
 	}
-	
-	public void launchService(View v){
-		Log.d(NewsConstants.LOG_TAG, "In btn click");
-		Intent bIntent = new Intent(this, NewsReceiver.class);
-		sendBroadcast(bIntent);
-		Log.d(NewsConstants.LOG_TAG, "After btn click");
-	}
 
+	private void refreshNews(){
+		sendBroadcast(new Intent(this, NewsReceiver.class));
+		refreshIconView.startAnimation(rotation);
+	}
+	private void afterRefresh(){
+		
+		Toast.makeText(this, "News Refreshed", Toast.LENGTH_LONG).show();
+		resetAndLoadList();
+		refreshIconView.clearAnimation();
+	}
+	
+	private void resetAndLoadList(){
+		newsWidget.swapMainCursor(null);
+		categorySelector.changeSpinnerCursor(null);
+		initLoaderWithId(NewsConstants.CATEGORY_LOADER_ID, null);
+	}
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		if(categorySelector==null){
@@ -74,7 +119,6 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 			newsWidget.swapMainCursor(cursor);
 			break;
 		default:
-			System.out.println("child="+cursor.getCount());
 			newsWidget.swapChildCursor(loader.getId(), cursor);
 		}
 	}

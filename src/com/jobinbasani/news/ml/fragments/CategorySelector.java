@@ -47,10 +47,11 @@ public class CategorySelector extends Fragment implements OnItemSelectedListener
 	@Override
 	public void onItemSelected(AdapterView<?> adapterView, View view, int i,
 			long l) {
-		System.out.println("tag="+view.getTag());
-		Bundle args = new Bundle();
-		args.putInt(NewsConstants.CATEGORY_KEY, (Integer) view.getTag());
-		newsDataHandler.initLoaderWithId(NewsConstants.NEWSGROUP_LOADER_ID, args);
+		if(view.getTag()!=null && (Integer)view.getTag()>0){
+			Bundle args = new Bundle();
+			args.putInt(NewsConstants.CATEGORY_KEY, (Integer) view.getTag());
+			newsDataHandler.initLoaderWithId(NewsConstants.NEWSGROUP_LOADER_ID, args);
+		}
 	}
 
 	@Override

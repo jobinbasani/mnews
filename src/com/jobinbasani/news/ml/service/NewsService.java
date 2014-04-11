@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class NewsService extends IntentService {
@@ -63,6 +64,7 @@ public class NewsService extends IntentService {
 			}
 			
 		}
+		LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(NewsConstants.NEWS_REFRESH_ACTION));
 		NewsReceiver.completeWakefulIntent(intent);
 	}
 	

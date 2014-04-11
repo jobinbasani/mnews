@@ -8,4 +8,5 @@ public class NewsConstants {
 	public final static int NEWSGROUP_LOADER_ID = -2;
 	public final static String CATEGORY_KEY = "categoryid";
 	public final static String NEWSID_KEY = "newsid";
+	public final static String NEWS_REFRESH_ACTION = "com.jobinbasani.news.ml.newsrefresh";
 }

@@ -7,5 +7,6 @@
     <string name="NewsProvider">com.jobinbasani.news.ml.provider</string>
     <string name="categorySelectorTag">CategorySelectorTag</string>
     <string name="newsWidgetTag">NewsWidgetTag</string>
+    <string name="menuRefresh">Refresh</string>
 
 </resources>
