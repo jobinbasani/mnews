@@ -18,12 +18,13 @@
         android:tag="@string/categorySelectorTag"
         tools:layout="@layout/category_selector" />
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="145dp"
-        android:onClick="launchService"
-        android:text="Button" />
+    <fragment
+        android:id="@+id/newsListFragment"
+        android:name="com.jobinbasani.news.ml.fragments.NewsWidget"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="fill"
+        android:tag="@string/newsWidgetTag"
+        tools:layout="@layout/news_widget" />
 
 </LinearLayout>

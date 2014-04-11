@@ -6,5 +6,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="NewsProvider">com.jobinbasani.news.ml.provider</string>
     <string name="categorySelectorTag">CategorySelectorTag</string>
+    <string name="newsWidgetTag">NewsWidgetTag</string>
 
 </resources>

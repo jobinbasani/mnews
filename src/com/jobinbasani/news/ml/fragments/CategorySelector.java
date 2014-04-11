@@ -41,13 +41,16 @@ public class CategorySelector extends Fragment implements OnItemSelectedListener
 		super.onActivityCreated(savedInstanceState);
 		if(newsDataHandler==null)
 			newsDataHandler = (NewsDataHandlers) getActivity();
-		newsDataHandler.initLoaderWithId(NewsConstants.CATEGORY_LOADER_ID);
+		newsDataHandler.initLoaderWithId(NewsConstants.CATEGORY_LOADER_ID, null);
 	}
 
 	@Override
 	public void onItemSelected(AdapterView<?> adapterView, View view, int i,
 			long l) {
 		System.out.println("tag="+view.getTag());
+		Bundle args = new Bundle();
+		args.putInt(NewsConstants.CATEGORY_KEY, (Integer) view.getTag());
+		newsDataHandler.initLoaderWithId(NewsConstants.NEWSGROUP_LOADER_ID, args);
 	}
 
 	@Override

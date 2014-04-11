@@ -6,5 +6,6 @@ public class NewsConstants {
 	public final static String LOG_TAG = "MalNews";
 	public final static int CATEGORY_LOADER_ID = -1;
 	public final static int NEWSGROUP_LOADER_ID = -2;
-
+	public final static String CATEGORY_KEY = "categoryid";
+	public final static String NEWSID_KEY = "newsid";
 }

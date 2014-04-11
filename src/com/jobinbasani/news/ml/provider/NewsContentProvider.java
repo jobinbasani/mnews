@@ -20,8 +20,8 @@ public class NewsContentProvider extends ContentProvider {
 	static{
 		URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, NewsDataContract.CATEGORIES, NEWS_CATEGORIES);
-		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, "mainnews", NEWS_MAIN);
-		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, "childnews/#", NEWS_CHILD);
+		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, NewsDataContract.MAINNEWS, NEWS_MAIN);
+		URI_MATCHER.addURI(NewsDataContract.AUTHORITY, NewsDataContract.CHILDNEWS, NEWS_CHILD);
 	}
 
 	@Override
@@ -76,6 +76,11 @@ public class NewsContentProvider extends ContentProvider {
 		case NEWS_CATEGORIES:
 			String categorySelection = "SELECT distinct "+NewsDataEntry.COLUMN_NAME_CATEGORYID+" as "+NewsDataEntry._ID+", "+NewsDataEntry.COLUMN_NAME_NEWSCATEGORY+" from "+NewsDataEntry.TABLE_NAME+" where "+NewsDataEntry.COLUMN_NAME_NEWSCATEGORY+" is not null";
 			return dbHelper.getReadableDatabase().rawQuery(categorySelection, null);
+		case NEWS_MAIN:
+			return dbHelper.getReadableDatabase().query(NewsDataEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, NewsDataEntry.COLUMN_NAME_NEWSID);
+		case NEWS_CHILD:
+			System.out.println("in here");
+			return dbHelper.getReadableDatabase().query(NewsDataEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, NewsDataEntry._ID);
 		}
 		return null;
 	}

@@ -2,8 +2,10 @@ package com.jobinbasani.news.ml;
 
 import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.fragments.CategorySelector;
+import com.jobinbasani.news.ml.fragments.NewsWidget;
 import com.jobinbasani.news.ml.interfaces.NewsDataHandlers;
 import com.jobinbasani.news.ml.provider.NewsDataContract;
+import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
 import com.jobinbasani.news.ml.receiver.NewsReceiver;
 
 import android.os.Bundle;
@@ -20,6 +22,7 @@ import android.view.View;
 public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, NewsDataHandlers {
 	
 	CategorySelector categorySelector;
+	NewsWidget newsWidget;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,11 +49,20 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		if(categorySelector==null){
 			categorySelector = (CategorySelector) getFragmentManager().findFragmentByTag(getResources().getString(R.string.categorySelectorTag));
 		}
+		if(newsWidget==null){
+			newsWidget = (NewsWidget) getFragmentManager().findFragmentByTag(getResources().getString(R.string.newsWidgetTag));
+		}
 		switch(id){
 		case NewsConstants.CATEGORY_LOADER_ID:
 			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_CATEGORIES, null, null, null, null);
+		case NewsConstants.NEWSGROUP_LOADER_ID:
+			String categoryId = args.getInt(NewsConstants.CATEGORY_KEY, 0)+"";
+			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_MAINNEWS, new String[]{NewsDataEntry._ID,NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSID}, NewsDataEntry.COLUMN_NAME_NEWSID+" is not null and "+NewsDataEntry.COLUMN_NAME_CATEGORYID+"=?", new String[]{categoryId}, null);
+		default:
+			String newsId = args.getInt(NewsConstants.NEWSID_KEY, 0)+"";
+			System.out.println("newsis="+newsId);
+			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_CHILDNEWS, new String[]{NewsDataEntry._ID,NewsDataEntry.COLUMN_NAME_NEWSHEADER}, NewsDataEntry.COLUMN_NAME_PARENTID+"=?", new String[]{newsId}, null);
 		}
-		return null;
 	}
 
 	@Override
@@ -59,6 +71,11 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		case NewsConstants.CATEGORY_LOADER_ID:
 			categorySelector.changeSpinnerCursor(cursor);
 			break;
+		case NewsConstants.NEWSGROUP_LOADER_ID:
+			newsWidget.swapMainCursor(cursor);
+			break;
+		default:
+			newsWidget.swapChildCursor(loader.getId(), cursor);
 		}
 	}
 
@@ -68,12 +85,21 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		case NewsConstants.CATEGORY_LOADER_ID:
 			categorySelector.changeSpinnerCursor(null);
 			break;
+		case NewsConstants.NEWSGROUP_LOADER_ID:
+			newsWidget.swapMainCursor(null);
+			break;
+		default:
+			newsWidget.swapChildCursor(loader.getId(), null);
 		}
 	}
 
 	@Override
-	public void initLoaderWithId(int loaderId) {
-		getLoaderManager().initLoader(loaderId, null, this);
+	public void initLoaderWithId(int loaderId, Bundle args) {
+		if(getLoaderManager().getLoader(loaderId)!=null){
+			getLoaderManager().restartLoader(loaderId, args, this);
+		}else{
+			getLoaderManager().initLoader(loaderId, args, this);
+		}
 	}
 
 }
