@@ -38,10 +38,7 @@ public class NewsItem {
 		return newsHeader;
 	}
 	public void setNewsHeader(String newsHeader) {
-		if(newsHeader!=null)
-			this.newsHeader = newsHeader;
-		else
-			this.newsHeader = " ";
+		this.newsHeader = newsHeader;
 	}
 	public String getNewsDetails() {
 		return newsDetails;

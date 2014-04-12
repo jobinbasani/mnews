@@ -173,6 +173,9 @@ public class NewsService extends IntentService {
 				    					 childNews.setNewsLink(detailsParser.getAttributeValue(null, "href"));
 				    					 detailsEventType = detailsParser.next();
 				    					 childNews.setNewsHeader(detailsParser.getText());
+				    					 if(childNews.getNewsHeader()==null){
+				    						 childNews.setNewsHeader(mainNews.getNewsHeader());
+				    					 }
 				    				 }else if(!childNewsStart && detailsEventType==XmlPullParser.START_TAG && detailsParser.getName()!=null && detailsParser.getName().equals("nobr")){
 				    					 childNewsStart = true;
 				    					 detailsEventType = detailsParser.next();
@@ -187,8 +190,10 @@ public class NewsService extends IntentService {
 				    			  
 				    			 detailsEventType = detailsParser.next();
 				    		 }
-				    		 mainNews.setChildNewsItems(childNewsList,true);
-				    		 newsList.add(mainNews);
+				    		 if(childNewsList.size()>1){
+				    			 mainNews.setChildNewsItems(childNewsList,true);
+					    		 newsList.add(mainNews);
+				    		 }
 			    		 }
 			    	 }
 			    	 
