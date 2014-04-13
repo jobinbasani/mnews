@@ -8,5 +8,8 @@
     <string name="categorySelectorTag">CategorySelectorTag</string>
     <string name="newsWidgetTag">NewsWidgetTag</string>
     <string name="menuRefresh">Refresh</string>
+    <string name="openLink">Open Link</string>
+    <string name="openLinkBrowser">Open in Browser</string>
+    <string name="shareLink">Share</string>
 
 </resources>

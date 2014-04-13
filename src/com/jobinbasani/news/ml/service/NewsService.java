@@ -37,7 +37,7 @@ public class NewsService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Log.d(NewsConstants.LOG_TAG, "In intent service");
-		String[] topics = {"","w","s"};
+		String[] topics = {"","w","e","s"};
 		ArrayList<NewsItem> newsCollection = new ArrayList<NewsItem>();
 		long batchId = System.currentTimeMillis();
 		int categoryId = 0;

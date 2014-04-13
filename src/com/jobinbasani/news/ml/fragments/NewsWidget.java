@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.SimpleCursorTreeAdapter;
 import android.widget.SimpleCursorTreeAdapter.ViewBinder;
 
@@ -33,8 +34,8 @@ public class NewsWidget extends Fragment {
 		newsList = (ExpandableListView) rootView.findViewById(R.id.newsList);
 		String[] groupFrom = new String[]{NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSDETAILS,NewsDataEntry.COLUMN_NAME_NEWSIMG};
 		int[] groupTo = new int[]{R.id.mainNewsHeader,R.id.mainNewsDetails, R.id.mainNewsImage};
-		String[] childFrom = new String[]{NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSPROVIDER};
-		int[] childTo = new int[]{R.id.childNewsHeader,R.id.childNewsProvider};
+		String[] childFrom = new String[]{NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSPROVIDER,NewsDataEntry.COLUMN_NAME_NEWSLINK};
+		int[] childTo = new int[]{R.id.childNewsHeader,R.id.childNewsProvider, R.id.newsDetailsOverflowMenuIcon};
 		mAdapter = new NewsTreeAdapter(getActivity(), R.layout.mainnews_layout, groupFrom, groupTo, R.layout.childnews_layout, childFrom, childTo);
 		mAdapter.setViewBinder(new NewsViewBinder());
 		newsList.setAdapter(mAdapter);
@@ -47,8 +48,11 @@ public class NewsWidget extends Fragment {
 	}
 	
 	public void swapChildCursor(int position, Cursor cursor){
-		if(mAdapter.getGroupCount()>0)
+		try{
 			mAdapter.setChildrenCursor(position, cursor);
+		}catch(NullPointerException npe){
+			
+		}
 	}
 	
 	private class NewsTreeAdapter extends SimpleCursorTreeAdapter{
@@ -78,6 +82,18 @@ public class NewsWidget extends Fragment {
 				ImageView imgView = (ImageView) view;
 				String filePath = getActivity().getFilesDir().getAbsolutePath()+File.separatorChar+cursor.getString(columnIndex);
 				imgView.setImageURI(Uri.fromFile(new File(filePath)));
+				return true;
+			}else if(view.getId() == R.id.newsDetailsOverflowMenuIcon){
+				final PopupMenu popupMenu = new PopupMenu(getActivity(), view);
+				popupMenu.getMenuInflater().inflate(R.menu.news_options_menu, popupMenu.getMenu());
+				view.setOnClickListener(new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						popupMenu.show();
+					}
+				});
+				view.setTag(cursor.getString(columnIndex));
 				return true;
 			}
 			return false;

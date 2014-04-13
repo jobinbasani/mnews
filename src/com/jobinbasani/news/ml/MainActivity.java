@@ -20,7 +20,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
-import android.view.View;
+import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -31,6 +31,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	CategorySelector categorySelector;
 	NewsWidget newsWidget;
 	private ImageView refreshIconView;
+	private MenuItem refreshMenuItem;
 	Animation rotation;
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
@@ -62,26 +63,34 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
-		refreshIconView = (ImageView) menu.findItem(R.id.action_refresh).getActionView();
-		refreshIconView.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				refreshNews();
-			}
-		});
+		refreshIconView = (ImageView) getLayoutInflater().inflate(R.layout.refresh_layout, null);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		
+		switch(item.getItemId()){
+		case R.id.action_refresh:
+			refreshIconView.startAnimation(rotation);
+			item.setActionView(refreshIconView);
+			if(refreshMenuItem==null)refreshMenuItem = item;
+			refreshNews();
+			break;
+		}
+		
 		return true;
 	}
 
 	private void refreshNews(){
 		sendBroadcast(new Intent(this, NewsReceiver.class));
-		refreshIconView.startAnimation(rotation);
 	}
 	private void afterRefresh(){
 		
 		Toast.makeText(this, "News Refreshed", Toast.LENGTH_LONG).show();
 		resetAndLoadList();
-		refreshIconView.clearAnimation();
+		refreshMenuItem.getActionView().clearAnimation();
+		refreshMenuItem.setActionView(null);
 	}
 	
 	private void resetAndLoadList(){
@@ -105,7 +114,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_MAINNEWS, new String[]{NewsDataEntry._ID,NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSDETAILS,NewsDataEntry.COLUMN_NAME_NEWSIMG,NewsDataEntry.COLUMN_NAME_NEWSID}, NewsDataEntry.COLUMN_NAME_NEWSID+" is not null and "+NewsDataEntry.COLUMN_NAME_CATEGORYID+"=?", new String[]{categoryId}, null);
 		default:
 			String newsId = args.getString(NewsConstants.NEWSID_KEY, "0");
-			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_CHILDNEWS, new String[]{NewsDataEntry._ID,NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSPROVIDER}, NewsDataEntry.COLUMN_NAME_PARENTID+"=?", new String[]{newsId}, null);
+			return new CursorLoader(MainActivity.this, NewsDataContract.CONTENT_URI_CHILDNEWS, new String[]{NewsDataEntry._ID,NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSPROVIDER,NewsDataEntry.COLUMN_NAME_NEWSLINK}, NewsDataEntry.COLUMN_NAME_PARENTID+"=?", new String[]{newsId}, null);
 		}
 	}
 
