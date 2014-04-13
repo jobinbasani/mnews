@@ -2,6 +2,7 @@ package com.jobinbasani.news.ml.fragments;
 
 import java.io.File;
 
+import com.jobinbasani.news.ml.NewsActivity;
 import com.jobinbasani.news.ml.R;
 import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.interfaces.NewsDataHandlers;
@@ -9,15 +10,21 @@ import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.TextView;
+import android.widget.PopupMenu.OnMenuItemClickListener;
+import android.widget.RelativeLayout;
 import android.widget.SimpleCursorTreeAdapter;
 import android.widget.SimpleCursorTreeAdapter.ViewBinder;
 
@@ -32,6 +39,7 @@ public class NewsWidget extends Fragment {
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.news_widget, null);
 		newsList = (ExpandableListView) rootView.findViewById(R.id.newsList);
+		newsList.setGroupIndicator(null);
 		String[] groupFrom = new String[]{NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSDETAILS,NewsDataEntry.COLUMN_NAME_NEWSIMG};
 		int[] groupTo = new int[]{R.id.mainNewsHeader,R.id.mainNewsDetails, R.id.mainNewsImage};
 		String[] childFrom = new String[]{NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSPROVIDER,NewsDataEntry.COLUMN_NAME_NEWSLINK};
@@ -94,10 +102,46 @@ public class NewsWidget extends Fragment {
 					}
 				});
 				view.setTag(cursor.getString(columnIndex));
+				popupMenu.setOnMenuItemClickListener(new NewsOptionsHandler(view.getParent()));
 				return true;
+			}else if(view.getId() == R.id.childNewsHeader){
+				TextView tv = (TextView) view;
+				tv.setText(cursor.getString(columnIndex));
+				tv.setTag(cursor.getString(cursor.getColumnIndex(NewsDataEntry.COLUMN_NAME_NEWSLINK)));
+				tv.setOnClickListener(new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						openLink(v);
+					}
+				});
 			}
 			return false;
 		}
 		
+	}
+	
+	private class NewsOptionsHandler implements OnMenuItemClickListener{
+		private RelativeLayout rl;
+		public NewsOptionsHandler(ViewParent view){
+			rl = (RelativeLayout) view;
+		}
+
+		@Override
+		public boolean onMenuItemClick(MenuItem item) {
+			switch(item.getItemId()){
+			case R.id.newsOptionsOpenLink:
+				openLink(rl.findViewById(R.id.newsDetailsOverflowMenuIcon));
+				break;
+			}
+			return true;
+		}
+		
+	}
+	
+	private void openLink(View v){
+		Intent newsIntent = new Intent(getActivity(), NewsActivity.class);
+		newsIntent.putExtra(NewsConstants.NEWS_URL, v.getTag().toString());
+		startActivity(newsIntent);
 	}
 }

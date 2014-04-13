@@ -7,9 +7,10 @@
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="18" />
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -25,9 +26,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".receiver.NewsReceiver" android:exported="false"></receiver>
-        <service android:name=".service.NewsService"></service>
-        <provider android:exported="false" android:authorities="@string/NewsProvider" android:name=".provider.NewsContentProvider"></provider>
+
+        <receiver
+            android:name="com.jobinbasani.news.ml.receiver.NewsReceiver"
+            android:exported="false" >
+        </receiver>
+
+        <service android:name="com.jobinbasani.news.ml.service.NewsService" >
+        </service>
+
+        <provider
+            android:name="com.jobinbasani.news.ml.provider.NewsContentProvider"
+            android:authorities="@string/NewsProvider"
+            android:exported="false" >
+        </provider>
+
+        <activity
+            android:name="com.jobinbasani.news.ml.NewsActivity"
+            android:label="@string/title_activity_news"
+            android:parentActivityName="com.jobinbasani.news.ml.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jobinbasani.news.ml.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

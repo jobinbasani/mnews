@@ -11,5 +11,6 @@
     <string name="openLink">Open Link</string>
     <string name="openLinkBrowser">Open in Browser</string>
     <string name="shareLink">Share</string>
+    <string name="title_activity_news">News</string>
 
 </resources>

@@ -9,4 +9,5 @@ public class NewsConstants {
 	public final static String CATEGORY_KEY = "categoryid";
 	public final static String NEWSID_KEY = "newsid";
 	public final static String NEWS_REFRESH_ACTION = "com.jobinbasani.news.ml.newsrefresh";
+	public final static String NEWS_URL = "url";
 }
