@@ -12,5 +12,6 @@
     <string name="openLinkBrowser">Open in Browser</string>
     <string name="shareLink">Share</string>
     <string name="title_activity_news">News</string>
+    <string name="initMessage">Initializing, please wait &#8230;</string>
 
 </resources>

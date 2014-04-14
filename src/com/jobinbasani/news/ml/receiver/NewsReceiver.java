@@ -14,6 +14,7 @@ public class NewsReceiver extends WakefulBroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Log.d(NewsConstants.LOG_TAG, "In broadcast reciever");
 		Intent sIntent = new Intent(context, NewsService.class);
+		sIntent.putExtra(NewsConstants.FIRST_LOAD, intent.getBooleanExtra(NewsConstants.FIRST_LOAD, false));
 		startWakefulService(context, sIntent);
 	}
 

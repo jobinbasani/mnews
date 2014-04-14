@@ -37,6 +37,7 @@ public class NewsService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Log.d(NewsConstants.LOG_TAG, "In intent service");
+		boolean isFirstLoad = intent.getBooleanExtra(NewsConstants.FIRST_LOAD, false);
 		String[] topics = {"","w","e","s"};
 		ArrayList<NewsItem> newsCollection = new ArrayList<NewsItem>();
 		long batchId = System.currentTimeMillis();
@@ -64,7 +65,9 @@ public class NewsService extends IntentService {
 			}
 			
 		}
-		LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(NewsConstants.NEWS_REFRESH_ACTION));
+		Intent newsIntent = new Intent(NewsConstants.NEWS_REFRESH_ACTION);
+		newsIntent.putExtra(NewsConstants.FIRST_LOAD, isFirstLoad);
+		LocalBroadcastManager.getInstance(this).sendBroadcast(newsIntent);
 		NewsReceiver.completeWakefulIntent(intent);
 	}
 	

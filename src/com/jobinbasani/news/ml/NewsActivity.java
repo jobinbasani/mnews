@@ -28,7 +28,7 @@ public class NewsActivity extends Activity {
 		setupActionBar();
 		this.url = getIntent().getStringExtra(NewsConstants.NEWS_URL);
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
-		//
+		progressBar.getProgressDrawable().setColorFilter(Color.RED, Mode.SRC_IN);
 		webView = (WebView) findViewById(R.id.webView);
 		loadPage();
 	}
@@ -93,7 +93,6 @@ public class NewsActivity extends Activity {
 
 		}); 
 		webView.loadUrl(this.url);
-		//progressBar.getProgressDrawable().setColorFilter(Color.GRAY, Mode.SRC_IN);
 	}
 
 
