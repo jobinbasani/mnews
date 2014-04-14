@@ -35,6 +35,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	private ImageView refreshIconView;
 	private MenuItem refreshMenuItem;
 	Animation rotation;
+	Menu actionMenu;
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -80,6 +81,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		refreshIconView = (ImageView) getLayoutInflater().inflate(R.layout.refresh_layout, null);
+		actionMenu = menu;
 		return true;
 	}
 
@@ -88,8 +90,6 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		
 		switch(item.getItemId()){
 		case R.id.action_refresh:
-			refreshIconView.startAnimation(rotation);
-			item.setActionView(refreshIconView);
 			if(refreshMenuItem==null)refreshMenuItem = item;
 			refreshNews(false);
 			break;
@@ -102,6 +102,13 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		Intent newsIntent = new Intent(this, NewsReceiver.class);
 		newsIntent.putExtra(NewsConstants.FIRST_LOAD, firstLoad);
 		sendBroadcast(newsIntent);
+		if(!firstLoad){
+			if(refreshMenuItem==null && actionMenu!=null)refreshMenuItem = actionMenu.findItem(R.id.action_refresh);
+			if(refreshMenuItem!=null){
+			refreshIconView.startAnimation(rotation);
+			refreshMenuItem.setActionView(refreshIconView);
+			}
+		}
 	}
 	private void afterRefresh(boolean firstLoad){
 		if(firstLoad){
@@ -110,8 +117,10 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		}else{
 			Toast.makeText(this, "News Refreshed", Toast.LENGTH_LONG).show();
 			resetAndLoadList();
+			if(refreshMenuItem!=null){
 			refreshMenuItem.getActionView().clearAnimation();
 			refreshMenuItem.setActionView(null);
+			}
 		}
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(NewsConstants.LAST_LOADED, System.currentTimeMillis());
