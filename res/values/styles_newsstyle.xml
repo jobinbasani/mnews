@@ -29,12 +29,15 @@
         <item name="android:actionModeBackground">@drawable/cab_background_top_newsstyle</item>
         <item name="android:actionModeSplitBackground">@drawable/cab_background_bottom_newsstyle</item>
         <item name="android:actionModeCloseButtonStyle">@style/ActionButton.CloseMode.Newsstyle</item>
+        <item name="android:itemTextAppearance">@style/myCustomMenuTextApearance</item>
         
                 <!-- Light.DarkActionBar specific -->
         <item name="android:actionBarWidgetTheme">@style/Theme.Newsstyle.Widget</item>
 
     </style>
-
+	<style name="myCustomMenuTextApearance" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
+        <item name="android:textColor">@android:color/primary_text_dark</item>
+    </style>
     <style name="ActionBar.Solid.Newsstyle" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
         <item name="android:background">@drawable/ab_solid_newsstyle</item>
         <item name="android:backgroundStacked">@drawable/ab_stacked_solid_newsstyle</item>
