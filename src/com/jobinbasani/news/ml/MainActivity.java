@@ -9,6 +9,7 @@ import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
 import com.jobinbasani.news.ml.receiver.NewsReceiver;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.BroadcastReceiver;
@@ -35,7 +36,6 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	private ImageView refreshIconView;
 	private MenuItem refreshMenuItem;
 	Animation rotation;
-	Menu actionMenu;
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -65,7 +65,15 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		if(lastLoaded == 0){
 			refreshNews(true);
 		}else if(System.currentTimeMillis()-lastLoaded>300000){
-			refreshNews(false);
+			invalidateOptionsMenu();
+			
+			new Handler().postDelayed(new Runnable() {
+				
+				@Override
+				public void run() {
+					refreshNews(false);
+				}
+			}, 200);
 		}
 		
 	}
@@ -77,11 +85,18 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	}
 
 	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if(refreshMenuItem==null){
+			refreshMenuItem = menu.findItem(R.id.action_refresh);
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		refreshIconView = (ImageView) getLayoutInflater().inflate(R.layout.refresh_layout, null);
-		actionMenu = menu;
 		return true;
 	}
 
@@ -103,7 +118,6 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		newsIntent.putExtra(NewsConstants.FIRST_LOAD, firstLoad);
 		sendBroadcast(newsIntent);
 		if(!firstLoad){
-			if(refreshMenuItem==null && actionMenu!=null)refreshMenuItem = actionMenu.findItem(R.id.action_refresh);
 			if(refreshMenuItem!=null){
 			refreshIconView.startAnimation(rotation);
 			refreshMenuItem.setActionView(refreshIconView);
