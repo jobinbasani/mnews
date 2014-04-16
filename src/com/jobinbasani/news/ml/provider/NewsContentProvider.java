@@ -77,7 +77,7 @@ public class NewsContentProvider extends ContentProvider {
 			String categorySelection = "SELECT distinct "+NewsDataEntry.COLUMN_NAME_CATEGORYID+" as "+NewsDataEntry._ID+", "+NewsDataEntry.COLUMN_NAME_NEWSCATEGORY+" from "+NewsDataEntry.TABLE_NAME
 					+" where "+NewsDataEntry.COLUMN_NAME_NEWSCATEGORY+" is not null and "
 					+NewsDataEntry.COLUMN_NAME_BATCHID
-					+"=(select max("+NewsDataEntry.COLUMN_NAME_BATCHID+") from "+NewsDataEntry.TABLE_NAME+")";
+					+"=(select max("+NewsDataEntry.COLUMN_NAME_BATCHID+") from "+NewsDataEntry.TABLE_NAME+") order by "+NewsDataEntry.COLUMN_NAME_CATEGORYID;
 			return dbHelper.getReadableDatabase().rawQuery(categorySelection, null);
 		case NEWS_MAIN:
 			return dbHelper.getReadableDatabase().query(NewsDataEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, NewsDataEntry.COLUMN_NAME_NEWSID);

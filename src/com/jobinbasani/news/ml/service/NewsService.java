@@ -10,10 +10,12 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import com.jobinbasani.news.ml.R;
 import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.provider.NewsDataContract;
 import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
@@ -29,6 +31,10 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class NewsService extends IntentService {
+	
+	private ArrayList<NewsItem> newsCollection;
+	private ArrayList<String> idList;
+	private long batchId;
 
 	public NewsService() {
 		super("NewsService");
@@ -38,44 +44,45 @@ public class NewsService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		Log.d(NewsConstants.LOG_TAG, "In intent service");
 		boolean isFirstLoad = intent.getBooleanExtra(NewsConstants.FIRST_LOAD, false);
-		String[] topics = {"","w","e","s"};
-		ArrayList<NewsItem> newsCollection = new ArrayList<NewsItem>();
-		long batchId = System.currentTimeMillis();
+		String[] topics = getResources().getStringArray(R.array.topics);
+		newsCollection = new ArrayList<NewsItem>();
+		idList = new ArrayList<String>();
+		batchId = System.currentTimeMillis();
+		
+		CountDownLatch countdownLatch = new CountDownLatch(topics.length);
 		int categoryId = 0;
 		for(String topic:topics){
-			newsCollection.addAll(getTopicNews(topic, batchId+"", ++categoryId+""));
+			new Thread(new FeedLoader(countdownLatch, topic, ++categoryId+"")).start();
 		}
-		boolean imgDownloadStatus = true;
-		for(NewsItem mainNews:newsCollection){
-			if(mainNews.getImageId()!=null){
-				if(!downloadImage(mainNews.getNewsImageUrl(), mainNews.getImageId()))
-					imgDownloadStatus = false;
-			}
-		}
-		if(newsCollection.size()>0){
-			if(imgDownloadStatus){
+		try{
+			countdownLatch.await();
+			
+			if(newsCollection.size()>0){
 				clearOldImages(batchId);
+				NewsItem newsValues = new NewsItem();
+				newsValues.setChildNewsItems(newsCollection);
+				int insertCount = getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
+				if(insertCount>0){
+					Log.d(NewsConstants.LOG_TAG, "Inserted = "+insertCount);
+					getContentResolver().delete(NewsDataContract.CONTENT_URI, NewsDataEntry.COLUMN_NAME_BATCHID+"<?", new String[]{batchId+""});
+				}
+				
 			}
-			NewsItem newsValues = new NewsItem();
-			newsValues.setChildNewsItems(newsCollection);
-			int insertCount = getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
-			if(insertCount>0){
-				Log.d(NewsConstants.LOG_TAG, "Inserted = "+insertCount);
-				getContentResolver().delete(NewsDataContract.CONTENT_URI, NewsDataEntry.COLUMN_NAME_BATCHID+"<?", new String[]{batchId+""});
-			}
+			Intent newsIntent = new Intent(NewsConstants.NEWS_REFRESH_ACTION);
+			newsIntent.putExtra(NewsConstants.FIRST_LOAD, isFirstLoad);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(newsIntent);
+			NewsReceiver.completeWakefulIntent(intent);
+		}catch(Exception e){
 			
 		}
-		Intent newsIntent = new Intent(NewsConstants.NEWS_REFRESH_ACTION);
-		newsIntent.putExtra(NewsConstants.FIRST_LOAD, isFirstLoad);
-		LocalBroadcastManager.getInstance(this).sendBroadcast(newsIntent);
-		NewsReceiver.completeWakefulIntent(intent);
+		
 	}
 	
-	private ArrayList<NewsItem> getTopicNews(String topic, String batchId, String categoryId){
+	private void getTopicNews(String topic, String categoryId){
 		ArrayList<NewsItem> newsList = new ArrayList<NewsItem>();
 		try{
 			String feedUrl = NewsConstants.NEWS_FEED_URL;
-			if(topic.length()>0)
+			if(!topic.equals("0"))
 				feedUrl = feedUrl+"&topic="+topic;
 			URL url = new URL(feedUrl);
 			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -97,7 +104,7 @@ public class NewsService extends IntentService {
 			    		 eventType = xpp.next();
 			    		 String details = xpp.getText().replaceAll("&nbsp;", " ").replaceAll("&raquo;", ">>");
 			    		 if(details.startsWith("<table")){
-			    			 String newsId = System.currentTimeMillis()+"";
+			    			 String newsId = getNewsId();
 			    			 NewsItem mainNews = new NewsItem();
 			    			 NewsItem childNews = new NewsItem();
 			    			 ArrayList<NewsItem> childNewsList = new ArrayList<NewsItem>();
@@ -112,7 +119,7 @@ public class NewsService extends IntentService {
 				    		 int linkCounter = 0;
 				    		 boolean mainHeaderSection = true;
 				    		 mainNews.setNewsId(newsId);
-				    		 mainNews.setBatchId(batchId);
+				    		 mainNews.setBatchId(batchId+"");
 				    		 mainNews.setCategoryId(categoryId);
 				    		 if(newsCategory!=null && newsCategory.length()>0){
 				    			 mainNews.setNewsCategory(newsCategory);
@@ -184,7 +191,7 @@ public class NewsService extends IntentService {
 				    					 detailsEventType = detailsParser.next();
 				    					 childNews.setNewsProvider(detailsParser.getText());
 				    					 if(childNews.getNewsHeader()!=null && childNews.getNewsLink()!=null && childNews.getNewsProvider()!=null){
-				    						 childNews.setBatchId(batchId);
+				    						 childNews.setBatchId(batchId+"");
 				    						 childNews.setCategoryId(categoryId);
 				    						 childNewsList.add(childNews);
 				    					 }
@@ -209,7 +216,24 @@ public class NewsService extends IntentService {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return newsList;
+		for(NewsItem mainNews:newsList){
+			if(mainNews.getImageId()!=null){
+				System.out.println(mainNews.getImageId());
+				downloadImage(mainNews.getNewsImageUrl(), mainNews.getImageId());
+			}
+		}
+		synchronized (this) {
+			newsCollection.addAll(newsList);
+		}
+	}
+	
+	private synchronized String getNewsId(){
+		long cTime = System.currentTimeMillis();
+		while(idList.contains(cTime+"")){
+			cTime++;
+		}
+		idList.add(cTime+"");
+		return cTime+"";
 	}
 	
 	private boolean downloadImage(String imgUrl, String imgId){
@@ -261,5 +285,25 @@ public class NewsService extends IntentService {
 			if(newsImage.lastModified()<referenceTimeStamp)
 				newsImage.delete();
 		}
+	}
+	
+	private class FeedLoader implements Runnable{
+		
+		CountDownLatch latch;
+		String topic;
+		String categoryId;
+		
+		public FeedLoader(CountDownLatch cLatch, String topic, String categoryId){
+			this.latch = cLatch;
+			this.topic = topic;
+			this.categoryId = categoryId;
+		}
+
+		@Override
+		public void run() {
+			getTopicNews(this.topic, this.categoryId);
+			latch.countDown();
+		}
+		
 	}
 }

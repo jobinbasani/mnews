@@ -13,5 +13,13 @@
     <string name="shareLink">Share</string>
     <string name="title_activity_news">News</string>
     <string name="initMessage">Initializing, please wait &#8230;</string>
+    <string-array name="topics">
+        <item >0</item>
+        <item >w</item>
+        <item >iekl</item>
+        <item >e</item>
+        <item >b</item>
+        <item >s</item>
+    </string-array>
 
 </resources>
