@@ -10,6 +10,8 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -35,6 +37,7 @@ public class NewsService extends IntentService {
 	private ArrayList<NewsItem> newsCollection;
 	private ArrayList<String> idList;
 	private long batchId;
+	private String[] topics;
 
 	public NewsService() {
 		super("NewsService");
@@ -44,15 +47,16 @@ public class NewsService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		Log.d(NewsConstants.LOG_TAG, "In intent service");
 		boolean isFirstLoad = intent.getBooleanExtra(NewsConstants.FIRST_LOAD, false);
-		String[] topics = getResources().getStringArray(R.array.topics);
+		topics = getResources().getStringArray(R.array.topics);
 		newsCollection = new ArrayList<NewsItem>();
 		idList = new ArrayList<String>();
 		batchId = System.currentTimeMillis();
-		
-		CountDownLatch countdownLatch = new CountDownLatch(topics.length);
+		BlockingQueue<ImageVO> imageQueue = new ArrayBlockingQueue<ImageVO>(10);
+		CountDownLatch countdownLatch = new CountDownLatch(topics.length+1);
+		new Thread(new ImageDownloader(countdownLatch, imageQueue)).start();
 		int categoryId = 0;
 		for(String topic:topics){
-			new Thread(new FeedLoader(countdownLatch, topic, ++categoryId+"")).start();
+			new Thread(new FeedLoader(countdownLatch,imageQueue,topic, ++categoryId+"")).start();
 		}
 		try{
 			countdownLatch.await();
@@ -78,7 +82,7 @@ public class NewsService extends IntentService {
 		
 	}
 	
-	private void getTopicNews(String topic, String categoryId){
+	private void getTopicNews(String topic,BlockingQueue<ImageVO> imageQueue, String categoryId){
 		ArrayList<NewsItem> newsList = new ArrayList<NewsItem>();
 		try{
 			String feedUrl = NewsConstants.NEWS_FEED_URL;
@@ -133,6 +137,9 @@ public class NewsService extends IntentService {
 					    				 }
 					    				 if(mainNews.getNewsImageUrl()!=null){
 					    					 mainNews.setImageId("nimg"+mainNews.getNewsId()+".png");
+					    				 }
+					    				 if(mainNews.getImageId()!=null && mainNews.getNewsImageUrl()!=null){
+					    					 imageQueue.put(new ImageVO(mainNews.getImageId(), mainNews.getNewsImageUrl()));
 					    				 }
 					    				 detailsEventType = detailsParser.next();
 					    				 continue;
@@ -216,11 +223,10 @@ public class NewsService extends IntentService {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		for(NewsItem mainNews:newsList){
-			if(mainNews.getImageId()!=null){
-				System.out.println(mainNews.getImageId());
-				downloadImage(mainNews.getNewsImageUrl(), mainNews.getImageId());
-			}
+		
+		try {
+			imageQueue.put(new ImageVO("end"));
+		} catch (InterruptedException e) {
 		}
 		synchronized (this) {
 			newsCollection.addAll(newsList);
@@ -290,20 +296,73 @@ public class NewsService extends IntentService {
 	private class FeedLoader implements Runnable{
 		
 		CountDownLatch latch;
+		BlockingQueue<ImageVO> imageQueue;
 		String topic;
 		String categoryId;
 		
-		public FeedLoader(CountDownLatch cLatch, String topic, String categoryId){
+		public FeedLoader(CountDownLatch cLatch, BlockingQueue<ImageVO> imageQueue, String topic, String categoryId){
 			this.latch = cLatch;
+			this.imageQueue = imageQueue;
 			this.topic = topic;
 			this.categoryId = categoryId;
 		}
 
 		@Override
 		public void run() {
-			getTopicNews(this.topic, this.categoryId);
+			getTopicNews(this.topic,this.imageQueue, this.categoryId);
 			latch.countDown();
 		}
 		
+	}
+	
+	private class ImageDownloader implements Runnable{
+		
+		BlockingQueue<ImageVO> imageQueue;
+		CountDownLatch latch;
+		int imgLoadEndCounter;
+		
+		public ImageDownloader(CountDownLatch cLatch, BlockingQueue<ImageVO> imageQueue){
+			this.latch = cLatch;
+			this.imageQueue = imageQueue;
+			imgLoadEndCounter = 0;
+		}
+
+		@Override
+		public void run() {
+			try{
+				ImageVO imgVo;
+				while(imgLoadEndCounter!=topics.length){
+					imgVo = imageQueue.take();
+					if(imgVo.getImgId().equals("end")){
+						imgLoadEndCounter++;
+					}else{
+						downloadImage(imgVo.getImgUrl(), imgVo.getImgId());
+					}
+				}
+				latch.countDown();
+			}catch(Exception e){
+				
+			}
+		}
+		
+	}
+	
+	private class ImageVO{
+		private String imgId;
+		private String imgUrl;
+		
+		public ImageVO(String imgId, String imgUrl){
+			this.imgId = imgId;
+			this.imgUrl = imgUrl;
+		}
+		public ImageVO(String imgId){
+			this.imgId = imgId;
+		}
+		public String getImgId() {
+			return imgId;
+		}
+		public String getImgUrl() {
+			return imgUrl;
+		}
 	}
 }
