@@ -7,6 +7,7 @@ import com.jobinbasani.news.ml.R;
 import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.interfaces.NewsDataHandlers;
 import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
+import com.jobinbasani.news.ml.util.NewsUtil;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -132,6 +134,19 @@ public class NewsWidget extends Fragment {
 			switch(item.getItemId()){
 			case R.id.newsOptionsOpenLink:
 				openLink(rl.findViewById(R.id.newsDetailsOverflowMenuIcon));
+				break;
+			case R.id.newsOptionsOpenLinkBrowser:
+				startActivity(NewsUtil.getBrowserIntent(rl.findViewById(R.id.newsDetailsOverflowMenuIcon).getTag().toString()));
+				break;
+			case R.id.newsOptionsShare:
+				new Handler().post(new Runnable() {
+					@Override
+					public void run() {
+						String[] urlArray = rl.findViewById(R.id.newsDetailsOverflowMenuIcon).getTag().toString().split("url=");
+						String shareData = ((TextView)rl.findViewById(R.id.childNewsHeader)).getText()+" - "+urlArray[urlArray.length-1];
+						startActivity(NewsUtil.getShareDataIntent(shareData));
+					}
+				});
 				break;
 			}
 			return true;

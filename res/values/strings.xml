@@ -21,5 +21,6 @@
         <item >b</item>
         <item >s</item>
     </string-array>
+    <string name="menuScreenShot">Screenshot</string>
 
 </resources>

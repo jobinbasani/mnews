@@ -109,6 +109,15 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 			if(refreshMenuItem==null)refreshMenuItem = item;
 			refreshNews(false);
 			break;
+		case R.id.action_screenshot:
+			new Handler().post(new Runnable() {
+				@Override
+				public void run() {
+					NewsUtil.takeScreenshot(getWindow().getDecorView().getRootView());
+				}
+			});
+			
+			break;
 		}
 		
 		return true;

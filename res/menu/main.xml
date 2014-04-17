@@ -5,6 +5,6 @@
         android:orderInCategory="100"
         android:showAsAction="always"
         android:title="@string/menuRefresh" android:icon="@drawable/reload"/>
-    <item android:id="@+id/action_settings" android:showAsAction="never" android:title="@string/action_settings"></item>
+    <item android:id="@+id/action_screenshot" android:title="@string/menuScreenShot"></item>
 
 </menu>
