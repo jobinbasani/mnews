@@ -7,6 +7,7 @@ import com.jobinbasani.news.ml.interfaces.NewsDataHandlers;
 import com.jobinbasani.news.ml.provider.NewsDataContract;
 import com.jobinbasani.news.ml.provider.NewsDataContract.NewsDataEntry;
 import com.jobinbasani.news.ml.receiver.NewsReceiver;
+import com.jobinbasani.news.ml.util.NewsUtil;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,7 +27,6 @@ import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, NewsDataHandlers {
 	
@@ -36,6 +36,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	private ImageView refreshIconView;
 	private MenuItem refreshMenuItem;
 	Animation rotation;
+	boolean isLoading = false;
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -114,22 +115,26 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	}
 
 	private void refreshNews(boolean firstLoad){
-		Intent newsIntent = new Intent(this, NewsReceiver.class);
-		newsIntent.putExtra(NewsConstants.FIRST_LOAD, firstLoad);
-		sendBroadcast(newsIntent);
-		if(!firstLoad){
-			if(refreshMenuItem!=null){
-			refreshIconView.startAnimation(rotation);
-			refreshMenuItem.setActionView(refreshIconView);
+		if(!isLoading){
+			isLoading = true;
+			Intent newsIntent = new Intent(this, NewsReceiver.class);
+			newsIntent.putExtra(NewsConstants.FIRST_LOAD, firstLoad);
+			sendBroadcast(newsIntent);
+			if(!firstLoad){
+				if(refreshMenuItem!=null){
+				refreshIconView.startAnimation(rotation);
+				refreshMenuItem.setActionView(refreshIconView);
+				}
 			}
 		}
 	}
 	private void afterRefresh(boolean firstLoad){
+		isLoading = false;
 		if(firstLoad){
 			setContentView(R.layout.activity_main);
 			getActionBar().show();
 		}else{
-			Toast.makeText(this, "News Refreshed", Toast.LENGTH_LONG).show();
+			NewsUtil.showToast(this, "Refresh complete!");
 			resetAndLoadList();
 			if(refreshMenuItem!=null){
 			refreshMenuItem.getActionView().clearAnimation();
