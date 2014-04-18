@@ -50,6 +50,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jobinbasani.news.ml.MainActivity" />
         </activity>
+        
+        <activity
+            android:name="com.jobinbasani.news.ml.ScreenshotActivity"
+            android:label="@string/title_activity_screenshot"
+            android:parentActivityName="com.jobinbasani.news.ml.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jobinbasani.news.ml.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -1,5 +1,7 @@
 package com.jobinbasani.news.ml.constants;
 
+import android.os.Environment;
+
 public class NewsConstants {
 
 	public final static String NEWS_FEED_URL = "http://news.google.co.in/news?cf=all&ned=ml_in&hl=ml&output=rss";
@@ -13,4 +15,6 @@ public class NewsConstants {
 	public final static String PREFS_FILE = "NewsPrefs";
 	public final static String LAST_LOADED = "lastLoaded";
 	public final static String FIRST_LOAD = "firstLoad";
+	public final static String SCR_SHOT_DIR = Environment.getExternalStorageDirectory().toString() + "/MalayalamNewsScreenshots/";
+	public final static String SCR_SHOT_PATH_KEY = "scrshotpath";
 }

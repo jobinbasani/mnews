@@ -5,12 +5,14 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import com.jobinbasani.news.ml.R;
+import com.jobinbasani.news.ml.constants.NewsConstants;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,14 +51,16 @@ public class NewsUtil {
 		return shareIntent;
 	}
 	
-	public static void takeScreenshot(View v){
+	public static String takeScreenshot(View v){
+		String filePath = "news"+System.currentTimeMillis()+".png";
+		
+		
 		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())){
-			String dirPath = Environment.getExternalStorageDirectory().toString() + "/MalayalamNewsScreenshots/";
-			File imgDir = new File(dirPath);
+			File imgDir = new File(NewsConstants.SCR_SHOT_DIR);
 			if(!imgDir.exists()){
 				imgDir.mkdirs();
 			}
-			String mPath = dirPath+"news"+System.currentTimeMillis()+".png";
+			String mPath = NewsConstants.SCR_SHOT_DIR+filePath;
 			Bitmap bitmap;
 			v.setDrawingCacheEnabled(true);
 			bitmap = Bitmap.createBitmap(v.getDrawingCache());
@@ -73,6 +77,13 @@ public class NewsUtil {
 				
 			}
 		}
+		
+		
+		return filePath;
+	}
+	
+	public static void debug(String msg){
+		Log.d(NewsConstants.LOG_TAG, msg);
 	}
 
 }

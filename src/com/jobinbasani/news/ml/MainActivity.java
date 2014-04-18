@@ -113,7 +113,10 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 			new Handler().post(new Runnable() {
 				@Override
 				public void run() {
-					NewsUtil.takeScreenshot(getWindow().getDecorView().getRootView());
+					String scrShotPath = NewsUtil.takeScreenshot(getWindow().getDecorView().getRootView());
+					Intent scrShotIntent = new Intent(MainActivity.this, ScreenshotActivity.class);
+					scrShotIntent.putExtra(NewsConstants.SCR_SHOT_PATH_KEY, NewsConstants.SCR_SHOT_DIR+scrShotPath);
+					startActivity(scrShotIntent);
 				}
 			});
 			
