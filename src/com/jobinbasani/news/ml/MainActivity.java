@@ -65,7 +65,8 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	@Override
 	protected void onStop() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
-		newsWidget.setRefreshing(false);
+		if(newsWidget!=null)
+			newsWidget.setRefreshing(false);
 		super.onStop();
 	}
 
@@ -110,8 +111,12 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	}
 	private void afterRefresh(boolean firstLoad, boolean feedLoaded){
 		if(firstLoad){
-			setContentView(R.layout.activity_main);
-			getActionBar().show();
+			try{
+				setContentView(R.layout.activity_main);
+				getActionBar().show();
+			}catch(Exception e){
+				
+			}
 		}else{
 			newsWidget.setRefreshing(false);
 			if(feedLoaded)

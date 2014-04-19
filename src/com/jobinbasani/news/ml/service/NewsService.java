@@ -62,7 +62,7 @@ public class NewsService extends IntentService {
 				countdownLatch.await();
 				
 				if(newsCollection.size()>0){
-					clearOldImages(batchId);
+					clearOldImages(batchId-NewsConstants.TEN_MIN_MILLISECONDS);
 					NewsItem newsValues = new NewsItem();
 					newsValues.setChildNewsItems(newsCollection);
 					int insertCount = getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
@@ -98,7 +98,7 @@ public class NewsService extends IntentService {
 			String feedUrl = NewsConstants.NEWS_FEED_URL;
 			if(!topic.equals("0"))
 				feedUrl = feedUrl+"&topic="+topic;
-			feedUrl = feedUrl+"&rand="+new Random().nextLong();
+			feedUrl = feedUrl+"&num=40&rand="+new Random().nextLong();
 			URL url = new URL(feedUrl);
 			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 			   try {
