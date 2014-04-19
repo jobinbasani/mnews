@@ -33,7 +33,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			afterRefresh(intent.getBooleanExtra(NewsConstants.FIRST_LOAD, false));
+			afterRefresh(intent.getBooleanExtra(NewsConstants.FIRST_LOAD, false),intent.getBooleanExtra(NewsConstants.FEED_LOADED, false));
 		}
 	};
 	@Override
@@ -65,6 +65,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	@Override
 	protected void onStop() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+		newsWidget.setRefreshing(false);
 		super.onStop();
 	}
 
@@ -101,23 +102,29 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	}
 
 	private void refreshNews(boolean firstLoad){
-		newsWidget.setRefreshing(true);
+		if(!firstLoad)
+			newsWidget.setRefreshing(true);
 		Intent newsIntent = new Intent(this, NewsReceiver.class);
 		newsIntent.putExtra(NewsConstants.FIRST_LOAD, firstLoad);
 		sendBroadcast(newsIntent);
 	}
-	private void afterRefresh(boolean firstLoad){
+	private void afterRefresh(boolean firstLoad, boolean feedLoaded){
 		if(firstLoad){
 			setContentView(R.layout.activity_main);
 			getActionBar().show();
 		}else{
-			NewsUtil.showToast(this, "Refresh complete!");
+			newsWidget.setRefreshing(false);
+			if(feedLoaded)
+				NewsUtil.showToast(this, "Refresh complete!");
+			else
+				NewsUtil.showToast(this, "No new items!");
 			resetAndLoadList();
 		}
-		newsWidget.setRefreshing(false);
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putLong(NewsConstants.LAST_LOADED, System.currentTimeMillis());
-		editor.commit();
+		if(feedLoaded){
+			SharedPreferences.Editor editor = prefs.edit();
+			editor.putLong(NewsConstants.LAST_LOADED, System.currentTimeMillis());
+			editor.commit();
+		}
 	}
 	
 	private void resetAndLoadList(){

@@ -14,12 +14,13 @@
     <string name="title_activity_news">News</string>
     <string name="initMessage">Initializing, please wait &#8230;</string>
     <string-array name="topics">
-        <item >0</item>
+        <item >h</item>
         <item >w</item>
         <item >iekl</item>
         <item >e</item>
         <item >b</item>
-        <item >s</item>
+        <item>awkl</item><item >s</item>
+        
     </string-array>
     <string name="menuScreenShot">Screenshot</string>
     <string name="title_activity_screenshot">Screenshot</string>

@@ -45,10 +45,11 @@ public class NewsWidget extends Fragment implements OnRefreshListener {
 		View rootView = inflater.inflate(R.layout.news_widget, null);
 		swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
 		swipeLayout.setOnRefreshListener(this);
-		swipeLayout.setColorScheme(android.R.color.holo_blue_bright, 
+		swipeLayout.setColorScheme(android.R.color.holo_red_light,
+				android.R.color.holo_blue_bright, 
 	            android.R.color.holo_green_light, 
-	            android.R.color.holo_orange_light, 
-	            android.R.color.holo_red_light);
+	            android.R.color.holo_orange_light
+	            );
 		newsList = (ExpandableListView) rootView.findViewById(R.id.newsList);
 		newsList.setGroupIndicator(null);
 		String[] groupFrom = new String[]{NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSDETAILS,NewsDataEntry.COLUMN_NAME_NEWSIMG};

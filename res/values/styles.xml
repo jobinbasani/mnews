@@ -6,4 +6,9 @@
     <color name="whiteColor">#ffffff</color>
     <color name="greyColor">#4F4143</color>
     
+    <style name="spinnerItemStyle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/maroonColor</item>
+    </style>
+    
 </resources>

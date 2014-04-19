@@ -17,4 +17,5 @@ public class NewsConstants {
 	public final static String FIRST_LOAD = "firstLoad";
 	public final static String SCR_SHOT_DIR = Environment.getExternalStorageDirectory().toString() + "/MalayalamNewsScreenshots/";
 	public final static String SCR_SHOT_PATH_KEY = "scrshotpath";
+	public final static String FEED_LOADED = "feedloaded";
 }

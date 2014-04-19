@@ -33,6 +33,10 @@
         
                 <!-- Light.DarkActionBar specific -->
         <item name="android:actionBarWidgetTheme">@style/Theme.Newsstyle.Widget</item>
+        
+        <item name="android:spinnerItemStyle">
+            @style/spinnerItemStyle
+        </item>
 
     </style>
 	<style name="myCustomMenuTextApearance" parent="@android:style/TextAppearance.Widget.IconMenu.Item">

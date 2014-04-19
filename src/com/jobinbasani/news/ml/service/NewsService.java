@@ -10,6 +10,7 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -44,40 +45,51 @@ public class NewsService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		Log.d(NewsConstants.LOG_TAG, "In intent service");
 		boolean isFirstLoad = intent.getBooleanExtra(NewsConstants.FIRST_LOAD, false);
+		long lastLoaded = getSharedPreferences(NewsConstants.PREFS_FILE, MODE_PRIVATE).getLong(NewsConstants.LAST_LOADED, 0);
+		batchId = System.currentTimeMillis();
 		String[] topics = getResources().getStringArray(R.array.topics);
 		newsCollection = new ArrayList<NewsItem>();
 		idList = new ArrayList<String>();
-		batchId = System.currentTimeMillis();
-		
-		CountDownLatch countdownLatch = new CountDownLatch(topics.length);
-		int categoryId = 0;
-		for(String topic:topics){
-			new Thread(new FeedLoader(countdownLatch, topic, ++categoryId+"")).start();
-		}
-		try{
-			countdownLatch.await();
-			
-			if(newsCollection.size()>0){
-				clearOldImages(batchId);
-				NewsItem newsValues = new NewsItem();
-				newsValues.setChildNewsItems(newsCollection);
-				int insertCount = getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
-				if(insertCount>0){
-					Log.d(NewsConstants.LOG_TAG, "Inserted = "+insertCount);
-					getContentResolver().delete(NewsDataContract.CONTENT_URI, NewsDataEntry.COLUMN_NAME_BATCHID+"<?", new String[]{batchId+""});
+		Intent newsIntent = new Intent(NewsConstants.NEWS_REFRESH_ACTION);
+		newsIntent.putExtra(NewsConstants.FIRST_LOAD, isFirstLoad);
+		if((batchId-lastLoaded)>240000){
+			CountDownLatch countdownLatch = new CountDownLatch(topics.length);
+			int categoryId = 0;
+			for(String topic:topics){
+				new Thread(new FeedLoader(countdownLatch, topic, ++categoryId+"")).start();
+			}
+			try{
+				countdownLatch.await();
+				
+				if(newsCollection.size()>0){
+					clearOldImages(batchId);
+					NewsItem newsValues = new NewsItem();
+					newsValues.setChildNewsItems(newsCollection);
+					int insertCount = getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
+					if(insertCount>0){
+						Log.d(NewsConstants.LOG_TAG, "Inserted = "+insertCount);
+						getContentResolver().delete(NewsDataContract.CONTENT_URI, NewsDataEntry.COLUMN_NAME_BATCHID+"<?", new String[]{batchId+""});
+						newsIntent.putExtra(NewsConstants.FEED_LOADED, true);
+					}
+					
 				}
 				
+				finishTasks(newsIntent, intent);
+			}catch(Exception e){
+				
 			}
-			Intent newsIntent = new Intent(NewsConstants.NEWS_REFRESH_ACTION);
-			newsIntent.putExtra(NewsConstants.FIRST_LOAD, isFirstLoad);
-			LocalBroadcastManager.getInstance(this).sendBroadcast(newsIntent);
-			newsCollection = null;
-			idList = null;
-			NewsReceiver.completeWakefulIntent(intent);
-		}catch(Exception e){
-			
+		}else{
+			newsIntent.putExtra(NewsConstants.FEED_LOADED, false);
+			finishTasks(newsIntent, intent);
 		}
 		
+	}
+	
+	private void finishTasks(Intent newsIntent, Intent wakefulIntent){
+		LocalBroadcastManager.getInstance(this).sendBroadcast(newsIntent);
+		newsCollection = null;
+		idList = null;
+		NewsReceiver.completeWakefulIntent(wakefulIntent);
 	}
 	
 	private void getTopicNews(String topic, String categoryId){
@@ -86,6 +98,7 @@ public class NewsService extends IntentService {
 			String feedUrl = NewsConstants.NEWS_FEED_URL;
 			if(!topic.equals("0"))
 				feedUrl = feedUrl+"&topic="+topic;
+			feedUrl = feedUrl+"&rand="+new Random().nextLong();
 			URL url = new URL(feedUrl);
 			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 			   try {
@@ -254,9 +267,6 @@ public class NewsService extends IntentService {
 				newsImg.compress(Bitmap.CompressFormat.PNG, 100, bytes);
 				outStream.write(bytes.toByteArray());
 				outStream.close();
-				if(newsImg!=null){
-					newsImg = null;
-				}
 				status = true;
 			}
 		} catch (Exception e) {
