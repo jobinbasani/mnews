@@ -24,19 +24,12 @@ import android.database.Cursor;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
 
 public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, NewsDataHandlers {
 	
 	CategorySelector categorySelector;
 	NewsWidget newsWidget;
 	SharedPreferences prefs;
-	private ImageView refreshIconView;
-	private MenuItem refreshMenuItem;
-	Animation rotation;
-	boolean isLoading = false;
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -47,8 +40,6 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		prefs = getSharedPreferences(NewsConstants.PREFS_FILE, MODE_PRIVATE);
-		rotation = AnimationUtils.loadAnimation(this, R.anim.rotation_animation);
-		rotation.setRepeatCount(Animation.INFINITE);
 		long lastLoaded = prefs.getLong(NewsConstants.LAST_LOADED, 0);
 		if(lastLoaded == 0){
 			setContentView(R.layout.splashscreen_layout);
@@ -66,15 +57,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		if(lastLoaded == 0){
 			refreshNews(true);
 		}else if(System.currentTimeMillis()-lastLoaded>300000){
-			invalidateOptionsMenu();
-			
-			new Handler().postDelayed(new Runnable() {
-				
-				@Override
-				public void run() {
-					refreshNews(false);
-				}
-			}, 200);
+			refreshNews(false);
 		}
 		
 	}
@@ -85,19 +68,11 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		super.onStop();
 	}
 
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		if(refreshMenuItem==null){
-			refreshMenuItem = menu.findItem(R.id.action_refresh);
-		}
-		return super.onPrepareOptionsMenu(menu);
-	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
-		refreshIconView = (ImageView) getLayoutInflater().inflate(R.layout.refresh_layout, null);
 		return true;
 	}
 
@@ -106,7 +81,6 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		
 		switch(item.getItemId()){
 		case R.id.action_refresh:
-			if(refreshMenuItem==null)refreshMenuItem = item;
 			refreshNews(false);
 			break;
 		case R.id.action_screenshot:
@@ -115,7 +89,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 				public void run() {
 					String scrShotPath = NewsUtil.takeScreenshot(getWindow().getDecorView().getRootView());
 					Intent scrShotIntent = new Intent(MainActivity.this, ScreenshotActivity.class);
-					scrShotIntent.putExtra(NewsConstants.SCR_SHOT_PATH_KEY, NewsConstants.SCR_SHOT_DIR+scrShotPath);
+					scrShotIntent.putExtra(NewsConstants.SCR_SHOT_PATH_KEY, scrShotPath);
 					startActivity(scrShotIntent);
 				}
 			});
@@ -127,32 +101,20 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	}
 
 	private void refreshNews(boolean firstLoad){
-		if(!isLoading){
-			isLoading = true;
-			Intent newsIntent = new Intent(this, NewsReceiver.class);
-			newsIntent.putExtra(NewsConstants.FIRST_LOAD, firstLoad);
-			sendBroadcast(newsIntent);
-			if(!firstLoad){
-				if(refreshMenuItem!=null){
-				refreshIconView.startAnimation(rotation);
-				refreshMenuItem.setActionView(refreshIconView);
-				}
-			}
-		}
+		newsWidget.setRefreshing(true);
+		Intent newsIntent = new Intent(this, NewsReceiver.class);
+		newsIntent.putExtra(NewsConstants.FIRST_LOAD, firstLoad);
+		sendBroadcast(newsIntent);
 	}
 	private void afterRefresh(boolean firstLoad){
-		isLoading = false;
 		if(firstLoad){
 			setContentView(R.layout.activity_main);
 			getActionBar().show();
 		}else{
 			NewsUtil.showToast(this, "Refresh complete!");
 			resetAndLoadList();
-			if(refreshMenuItem!=null){
-			refreshMenuItem.getActionView().clearAnimation();
-			refreshMenuItem.setActionView(null);
-			}
 		}
+		newsWidget.setRefreshing(false);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(NewsConstants.LAST_LOADED, System.currentTimeMillis());
 		editor.commit();
@@ -218,6 +180,11 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		}else{
 			getLoaderManager().initLoader(loaderId, args, this);
 		}
+	}
+
+	@Override
+	public void refreshFeed() {
+		refreshNews(false);
 	}
 
 }

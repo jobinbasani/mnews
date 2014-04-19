@@ -16,6 +16,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,16 +32,23 @@ import android.widget.RelativeLayout;
 import android.widget.SimpleCursorTreeAdapter;
 import android.widget.SimpleCursorTreeAdapter.ViewBinder;
 
-public class NewsWidget extends Fragment {
+public class NewsWidget extends Fragment implements OnRefreshListener {
 	
 	ExpandableListView newsList;
 	NewsTreeAdapter mAdapter;
 	NewsDataHandlers newsDataHandler;
+	SwipeRefreshLayout swipeLayout;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.news_widget, null);
+		swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+		swipeLayout.setOnRefreshListener(this);
+		swipeLayout.setColorScheme(android.R.color.holo_blue_bright, 
+	            android.R.color.holo_green_light, 
+	            android.R.color.holo_orange_light, 
+	            android.R.color.holo_red_light);
 		newsList = (ExpandableListView) rootView.findViewById(R.id.newsList);
 		newsList.setGroupIndicator(null);
 		String[] groupFrom = new String[]{NewsDataEntry.COLUMN_NAME_NEWSHEADER,NewsDataEntry.COLUMN_NAME_NEWSDETAILS,NewsDataEntry.COLUMN_NAME_NEWSIMG};
@@ -159,4 +168,14 @@ public class NewsWidget extends Fragment {
 		newsIntent.putExtra(NewsConstants.NEWS_URL, v.getTag().toString());
 		startActivity(newsIntent);
 	}
+
+	@Override
+	public void onRefresh() {
+		newsDataHandler.refreshFeed();
+	}
+	
+	public void setRefreshing(boolean status){
+		swipeLayout.setRefreshing(status);
+	}
+	
 }

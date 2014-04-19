@@ -52,22 +52,20 @@ public class NewsUtil {
 	}
 	
 	public static String takeScreenshot(View v){
-		String filePath = "news"+System.currentTimeMillis()+".png";
-		
+		String filePath = NewsConstants.SCR_SHOT_DIR+"news"+System.currentTimeMillis()+".png";
 		
 		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())){
 			File imgDir = new File(NewsConstants.SCR_SHOT_DIR);
 			if(!imgDir.exists()){
 				imgDir.mkdirs();
 			}
-			String mPath = NewsConstants.SCR_SHOT_DIR+filePath;
 			Bitmap bitmap;
 			v.setDrawingCacheEnabled(true);
 			bitmap = Bitmap.createBitmap(v.getDrawingCache());
 			v.setDrawingCacheEnabled(false);
 			
 			OutputStream fout = null;
-			File imgFile = new File(mPath);
+			File imgFile = new File(filePath);
 			try{
 				fout = new FileOutputStream(imgFile);
 				bitmap.compress(Bitmap.CompressFormat.PNG, 100, fout);
