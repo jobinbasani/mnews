@@ -124,7 +124,7 @@ public class NewsWidget extends Fragment implements OnRefreshListener {
 					
 					@Override
 					public void onClick(View v) {
-						openLink(v);
+						openLink(v,v);
 					}
 				});
 			}
@@ -143,7 +143,7 @@ public class NewsWidget extends Fragment implements OnRefreshListener {
 		public boolean onMenuItemClick(MenuItem item) {
 			switch(item.getItemId()){
 			case R.id.newsOptionsOpenLink:
-				openLink(rl.findViewById(R.id.newsDetailsOverflowMenuIcon));
+				openLink(rl.findViewById(R.id.newsDetailsOverflowMenuIcon),rl.findViewById(R.id.childNewsHeader));
 				break;
 			case R.id.newsOptionsOpenLinkBrowser:
 				startActivity(NewsUtil.getBrowserIntent(rl.findViewById(R.id.newsDetailsOverflowMenuIcon).getTag().toString()));
@@ -164,9 +164,10 @@ public class NewsWidget extends Fragment implements OnRefreshListener {
 		
 	}
 	
-	private void openLink(View v){
+	private void openLink(View v, View textView){
 		Intent newsIntent = new Intent(getActivity(), NewsActivity.class);
 		newsIntent.putExtra(NewsConstants.NEWS_URL, v.getTag().toString());
+		newsIntent.putExtra(NewsConstants.NEWS_TITLE, ((TextView)textView).getText());
 		startActivity(newsIntent);
 	}
 

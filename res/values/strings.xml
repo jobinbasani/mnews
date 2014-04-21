@@ -24,5 +24,10 @@
     <string name="menuScreenShot">Screenshot</string>
     <string name="title_activity_screenshot">Screenshot</string>
     <string name="scrShotDescr">News Screenshot</string>
+    <string name="action_feedback">Feedback</string>
+    <string name="action_rate_app">Rate App</string>
+    <string name="feedbackIntentTitle">Send Feedback</string>
+    <string name="feedbackSubject">Malayalam News - Feedback</string>
+    <string name="feedbackEmail">jbapps@outlook.com</string>
 
 </resources>

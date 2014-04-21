@@ -2,6 +2,7 @@ package com.jobinbasani.news.ml;
 
 
 import com.jobinbasani.news.ml.constants.NewsConstants;
+import com.jobinbasani.news.ml.util.NewsUtil;
 
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.OnScanCompletedListener;
@@ -12,21 +13,20 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
+import android.widget.ShareActionProvider;
 import android.support.v4.app.NavUtils;
 
 public class ScreenshotActivity extends Activity {
 	
 	private String scrShotFile;
-	private Uri imageUri;
 	private Handler handler = new Handler();
+	private ShareActionProvider mShareActionProvider;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_screenshot);
-		imageUri = null;
 		// Show the Up button in the action bar.
 		setupActionBar();
 		scrShotFile = getIntent().getStringExtra(NewsConstants.SCR_SHOT_PATH_KEY);
@@ -43,9 +43,15 @@ public class ScreenshotActivity extends Activity {
 						@Override
 						public void run() {
 							imgView.setImageURI(uri);
+							if(mShareActionProvider!=null){
+								Intent shareIntent = new Intent();
+								shareIntent.setAction(Intent.ACTION_SEND);
+								shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+								shareIntent.setType("image/png");
+								mShareActionProvider.setShareIntent(shareIntent);
+							}
 						}
 					});
-					imageUri = uri;
 				}
 			});
 		}
@@ -64,6 +70,8 @@ public class ScreenshotActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.screenshot, menu);
+		MenuItem shareItem = menu.findItem(R.id.actionScreenshotShare);
+		mShareActionProvider = (ShareActionProvider) shareItem.getActionProvider();
 		return true;
 	}
 
@@ -80,18 +88,11 @@ public class ScreenshotActivity extends Activity {
 			//
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
+		case R.id.scrshot_feedback:
+			startActivity(NewsUtil.getFeedbackIntent(this));
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
-	public void shareScreenshot(View v){
-		if(scrShotFile!=null){
-			Intent shareIntent = new Intent();
-			shareIntent.setAction(Intent.ACTION_SEND);
-			shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-			shareIntent.setType("image/png");
-			startActivity(Intent.createChooser(shareIntent, getResources().getString(R.string.shareLink)));
-		}
-	}
-
 }

@@ -56,7 +56,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		long lastLoaded = prefs.getLong(NewsConstants.LAST_LOADED, 0);
 		if(lastLoaded == 0){
 			refreshNews(true);
-		}else if(System.currentTimeMillis()-lastLoaded>300000){
+		}else if(System.currentTimeMillis()-lastLoaded>(NewsConstants.ONE_MIN_MILLISECONDS * 5)){
 			refreshNews(false);
 		}
 		
@@ -82,9 +82,6 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 	public boolean onOptionsItemSelected(MenuItem item) {
 		
 		switch(item.getItemId()){
-		case R.id.action_refresh:
-			refreshNews(false);
-			break;
 		case R.id.action_screenshot:
 			new Handler().post(new Runnable() {
 				@Override
@@ -96,6 +93,9 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 				}
 			});
 			
+			break;
+		case R.id.action_main_feedback:
+			startActivity(NewsUtil.getFeedbackIntent(this));
 			break;
 		}
 		

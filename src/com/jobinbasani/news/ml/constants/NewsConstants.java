@@ -18,7 +18,6 @@ public class NewsConstants {
 	public final static String SCR_SHOT_DIR = Environment.getExternalStorageDirectory().toString() + "/MalayalamNewsScreenshots/";
 	public final static String SCR_SHOT_PATH_KEY = "scrshotpath";
 	public final static String FEED_LOADED = "feedloaded";
-	public final static int FIVE_MIN_MILLISECONDS = 300000;
-	public final static int FOUR_MIN_MILLISECONDS = 240000;
-	public final static int TEN_MIN_MILLISECONDS = 600000;
+	public final static int ONE_MIN_MILLISECONDS = 60000;
+	public final static String NEWS_TITLE = "newstitle";
 }

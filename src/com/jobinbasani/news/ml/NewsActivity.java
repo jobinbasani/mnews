@@ -1,25 +1,33 @@
 package com.jobinbasani.news.ml;
 
 import com.jobinbasani.news.ml.constants.NewsConstants;
+import com.jobinbasani.news.ml.util.NewsUtil;
+
 import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnKeyListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.ShareActionProvider;
 import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 
-public class NewsActivity extends Activity {
+public class NewsActivity extends Activity implements OnKeyListener{
 	
 	private String url;
+	private String newsTitle;
 	private ProgressBar progressBar;
 	private WebView webView;
+	private ShareActionProvider mShareActionProvider;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,10 +35,23 @@ public class NewsActivity extends Activity {
 		setContentView(R.layout.activity_news);
 		setupActionBar();
 		this.url = getIntent().getStringExtra(NewsConstants.NEWS_URL);
+		this.newsTitle = getIntent().getStringExtra(NewsConstants.NEWS_TITLE);
+		setShareIntent();
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 		progressBar.getProgressDrawable().setColorFilter(Color.RED, Mode.SRC_IN);
 		webView = (WebView) findViewById(R.id.webView);
+		webView.setOnKeyListener(this);
 		loadPage();
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
 	}
 
 	/**
@@ -46,6 +67,9 @@ public class NewsActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.news, menu);
+		MenuItem shareItem = menu.findItem(R.id.newsShareAction);
+		mShareActionProvider = (ShareActionProvider) shareItem.getActionProvider();
+		setShareIntent();
 		return true;
 	}
 
@@ -62,8 +86,19 @@ public class NewsActivity extends Activity {
 			//
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
+		case R.id.news_feedback:
+			startActivity(NewsUtil.getFeedbackIntent(this));
+			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	private void setShareIntent(){
+		if(mShareActionProvider!=null)
+		{
+			String[] shareUrlArray = url.split("url=");
+			mShareActionProvider.setShareIntent(NewsUtil.getShareDataIntent(newsTitle+" - "+shareUrlArray[shareUrlArray.length-1]));
+		}
 	}
 	
 	@SuppressLint("SetJavaScriptEnabled")
@@ -94,6 +129,20 @@ public class NewsActivity extends Activity {
 		}); 
 		webView.loadUrl(this.url);
 	}
-
+	
+	@Override
+	public boolean onKey(View v, int keyCode, KeyEvent event) {
+		if(event.getAction() == KeyEvent.ACTION_DOWN){
+			switch(keyCode){
+			case KeyEvent.KEYCODE_BACK:
+				if(webView.canGoBack()){
+					webView.goBack();
+					return true;
+				}
+				break;
+			}
+		}
+		return false;
+	}
 
 }

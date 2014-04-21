@@ -3,12 +3,15 @@ package com.jobinbasani.news.ml.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import com.jobinbasani.news.ml.R;
 import com.jobinbasani.news.ml.constants.NewsConstants;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
@@ -82,6 +85,21 @@ public class NewsUtil {
 	
 	public static void debug(String msg){
 		Log.d(NewsConstants.LOG_TAG, msg);
+	}
+	
+	public static Intent getFeedbackIntent(Context context){
+		Intent emailIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("mailto:"+context.getResources().getString(R.string.feedbackEmail)+"?subject="+Uri.encode(context.getResources().getString(R.string.feedbackSubject))));
+		emailIntent.putExtra(Intent.EXTRA_SUBJECT, context.getResources().getString(R.string.feedbackSubject));
+
+		List<ResolveInfo> activities = context.getPackageManager().queryIntentActivities(emailIntent, 0);
+		//To prevent Receiver leak bug when only application is available for Intent
+		if (activities.size() > 1) {
+		    // Create and start the chooser
+		    return Intent.createChooser(emailIntent, context.getResources().getString(R.string.feedbackIntentTitle));
+
+		  } else {
+		    return emailIntent;
+		}
 	}
 
 }

@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -52,7 +51,7 @@ public class NewsService extends IntentService {
 		idList = new ArrayList<String>();
 		Intent newsIntent = new Intent(NewsConstants.NEWS_REFRESH_ACTION);
 		newsIntent.putExtra(NewsConstants.FIRST_LOAD, isFirstLoad);
-		if((batchId-lastLoaded)>240000){
+		if((batchId-lastLoaded)>(NewsConstants.ONE_MIN_MILLISECONDS * 4)){
 			CountDownLatch countdownLatch = new CountDownLatch(topics.length);
 			int categoryId = 0;
 			for(String topic:topics){
@@ -62,7 +61,7 @@ public class NewsService extends IntentService {
 				countdownLatch.await();
 				
 				if(newsCollection.size()>0){
-					clearOldImages(batchId-NewsConstants.TEN_MIN_MILLISECONDS);
+					clearOldImages(batchId-(NewsConstants.ONE_MIN_MILLISECONDS * 10));
 					NewsItem newsValues = new NewsItem();
 					newsValues.setChildNewsItems(newsCollection);
 					int insertCount = getContentResolver().bulkInsert(NewsDataContract.CONTENT_URI, newsValues.getContentValueArray());
@@ -102,7 +101,7 @@ public class NewsService extends IntentService {
 			URL url = new URL(feedUrl);
 			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 			   try {
-			     InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+			     BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
 			     XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 			     XmlPullParser xpp = factory.newPullParser();
 			     xpp.setInput(in, "UTF-8");
@@ -260,7 +259,7 @@ public class NewsService extends IntentService {
 			conn.connect();
 			responseCode = conn.getResponseCode();
 			if(responseCode == HttpURLConnection.HTTP_OK){
-				InputStream input = conn.getInputStream();
+				BufferedInputStream input = new BufferedInputStream(conn.getInputStream());
 				Bitmap newsImg = BitmapFactory.decodeStream(input);
 				FileOutputStream outStream = openFileOutput(imgId, Context.MODE_PRIVATE);
 				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
