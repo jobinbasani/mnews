@@ -1,5 +1,6 @@
 package com.jobinbasani.news.ml;
 
+import com.google.analytics.tracking.android.EasyTracker;
 import com.jobinbasani.news.ml.constants.NewsConstants;
 import com.jobinbasani.news.ml.fragments.CategorySelector;
 import com.jobinbasani.news.ml.fragments.NewsWidget;
@@ -59,7 +60,7 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		}else if(System.currentTimeMillis()-lastLoaded>(NewsConstants.ONE_MIN_MILLISECONDS * 5)){
 			refreshNews(false);
 		}
-		
+		EasyTracker.getInstance(this).activityStart(this);
 	}
 
 	@Override
@@ -67,9 +68,17 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
 		if(newsWidget!=null)
 			newsWidget.setRefreshing(false);
+		EasyTracker.getInstance(this).activityStop(this);
 		super.onStop();
+		
 	}
 
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.findItem(R.id.action_main_rate_app).setVisible(NewsUtil.showRateApp(this));
+		return super.onPrepareOptionsMenu(menu);
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -96,6 +105,9 @@ public class MainActivity extends Activity implements LoaderCallbacks<Cursor>, N
 			break;
 		case R.id.action_main_feedback:
 			startActivity(NewsUtil.getFeedbackIntent(this));
+			break;
+		case R.id.action_main_rate_app:
+			startActivity(NewsUtil.getPlaystoreListing(getPackageName()));
 			break;
 		}
 		

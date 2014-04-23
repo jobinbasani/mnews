@@ -210,7 +210,9 @@ public class NewsService extends IntentService {
 				    					 if(childNews.getNewsHeader()!=null && childNews.getNewsLink()!=null && childNews.getNewsProvider()!=null){
 				    						 childNews.setBatchId(batchId+"");
 				    						 childNews.setCategoryId(categoryId);
-				    						 childNewsList.add(childNews);
+				    						 if(!childNews.getNewsLink().contains("veekshanam")){
+				    							 childNewsList.add(childNews);
+				    						 }
 				    					 }
 				    				 }
 				    			 } 
